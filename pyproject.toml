@@ -18,6 +18,8 @@ classifiers = [
 ]
 dependencies = [
     "py_bsor >= 0.9.11",
+    "numpy >= 1.24.2",
+    "matplotlib >= 3.7.1",
 ]
 
 
