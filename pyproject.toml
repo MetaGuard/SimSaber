@@ -1,0 +1,26 @@
+[project]
+name = "simsaber"
+version = "0.1.0"
+authors = [
+  { name="Vivek Nair", email="vcn@berkeley.edu" },
+  { name="Atticus Cull", email="atticuscull@berkeley.edu" },
+  { name="Ines Bouissou", email="ines.b@berkeley.edu" },
+  { name="Christopher Harjadi", email="cwharjadi@berkeley.edu" },
+]
+description = "Python-based Beat Saber replay simulator and scoring validator."
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "py_bsor >= 0.9.11",
+]
+
+
+[project.urls]
+"Homepage" = "https://github.com/MetaGuard/SimSaber"
+"Bug Tracker" = "https://github.com/MetaGuard/SimSaber/issues"
