@@ -1,4 +1,5 @@
 from typing import *
+from Geometry import Vector3
 
 
 class Obstacle:
@@ -28,3 +29,10 @@ class BeatMap:
 class Map:
     beatsPerMinute: int
     beatMaps: Dict[str, Dict[str, BeatMap]]
+
+
+class SaberMovementData:
+    hiltPos: Vector3
+    tipPos: Vector3
+    cutPlaneNormal: Vector3
+    time: float
