@@ -1,0 +1,42 @@
+TO LEARN:
+
+1. Order of events
+    - Left or right hand collision checked first
+    - Order of events between a miss vs a cut
+    - Order of events between a cut or an obstacle hit
+    - When are notes spawned
+    - When are obstacles spawned
+
+2. Hitboxes
+    - Note position + rotation
+    - Hitbox sizes for notes
+    - Bomb hitbox size and shape
+    - Obstacle hitbox
+
+3. Collision:
+    - Why do GameNote objects have a list of smallCuttableBySaber (resp bigCuttableBySaber)
+        as opposed to just a single smallCuttableBySaber hitbox?
+    - How does Unity check for collision
+
+
+TO CODE (based on outline in calculateScore.py):
+
+1. Data managers:
+    - Energy
+    - Combo
+    - Active Notes/Bombs
+    - Active Obstacles
+
+2. Collision checking:
+    - Box with Box
+    - Sphere with Box
+    - Point with Box
+
+3. Game State:
+    - Note position + rotation
+    - Obstacle position
+
+4. Score calculation
+    - Pre Swing
+    - Post Swing
+    - Accuracy
