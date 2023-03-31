@@ -28,7 +28,7 @@ class SaberMovementBuffer:
 
         new_data.hiltPos = Vector3(hand_object.x, hand_object.y, hand_object.z)
         new_data.tipPos = Vector3(0, 1, 0).rotate(
-            Quaternion(hand_object.x, hand_object.y, hand_object.z, hand_object.w)
+            Quaternion(hand_object.x_rot, hand_object.y_rot, hand_object.z_rot, hand_object.w_rot)
         )
         new_data.time = time
 
