@@ -8,7 +8,7 @@ from typing import *
 from math import cos, sin, pi as π
 from numpy import single
 from Geometry import Vector3, Quaternion
-from bsor.Bsor import Bsor
+from bsor.Bsor import Bsor, Frame
 
 
 def lerp_unclamped(a, b, t):
@@ -29,7 +29,7 @@ def quadratic_in_out(t):
     return (4 - 2 * t) * t - 1
 
 def head_offset_z(noteInverseWorldRotation, headPseudoLocalPos):
-    return (noteInverseWorldRotation * headPseudoLocalPos).z;
+    return (headPseudoLocalPos.rotate(noteInverseWorldRotation)).z
 
 def get_z_pos(start, end, headOffsetZ, t):
     return lerp_unclamped(start + headOffsetZ * min(1, t * 2), end + headOffsetZ, t)
@@ -50,7 +50,7 @@ class NoteData:
     COLOR_B = 1
 
     def __init__(self, map: Map, note: Note):
-        self.time = note.time * map.beatsPerMinute
+        self.time = note.time * 60 / map.beatsPerMinute
         self.line_index = note.lineIndex
         self.flip_line_index = note.lineIndex
         self.flip_y_side = 0
@@ -58,6 +58,13 @@ class NoteData:
         self.line_layer = note.lineLayer
         self.before_line_layer = note.lineLayer
         self.note_type = note.type
+        self.cut_direction = note.cutDirection
+        self.gameplay_type = NoteData.GameplayType.NORMAL
+
+    class GameplayType:
+        NORMAL = 0
+
+
 
 
 class MovementData:
@@ -69,7 +76,7 @@ class MovementData:
 
     def __init__(self, map: Map, note_data: NoteData, bsor: Bsor):
         self.note_lines_count = 4
-        start_NJS = 0  # Called startNoteJumpMovementSpeed
+        start_NJS = map.beatMaps["Standard"]["Easy"].noteJumpMovementSpeed  # Called startNoteJumpMovementSpeed
         start_bpm = map.beatsPerMinute
         self.jump_duration = bsor.info.jumpDistance / start_NJS  # Notably NOT the same way the game calculates it
         self.right_vec = Vector3(1, 0, 0)
@@ -82,16 +89,16 @@ class MovementData:
         self.spawn_ahead_time = self.move_duration + self.jump_duration * 0.5
         self.NJS = start_NJS
         self.JD = bsor.info.jumpDistance
-        self.jumpOffsetY = get_y_offset_from_height(bsor.info.height) ### todo: dynamic height
+        self.jumpOffsetY = self.get_y_offset_from_height(bsor.info.height) ### todo: dynamic height
 
         note_offset_1 = self.get_note_offset(note_data.line_index, note_data.line_layer)
         self.jump_gravity = self.get_gravity(note_data.line_layer, note_data.line_layer)
 
     def clamp(self, num, min_value, max_value):
-       return max(min(num, max_value), min_value)
+        return max(min(num, max_value), min_value)
 
     def get_y_offset_from_height(self, playerHeight):
-        return this.clamp(((playerHeight - 1.7999999523162842) * 0.5), -0.2, 0.6)
+        return self.clamp(((playerHeight - 1.7999999523162842) * 0.5), -0.2, 0.6)
 
     def get_note_offset(self, line_index, before_note_line_layer):
         return self.right_vec * ((-(self.note_lines_count - 1) * 0.5 + line_index) * 0.6) + Vector3(
@@ -104,12 +111,12 @@ class MovementData:
 
     def highest_jump_pos_y_for_line_layer(self, layer):
         if (layer == 0): return 0.85 + self.jumpOffsetY
-        if (lineLayer == 1): return 1.4 + self.jumpOffsetY
+        if (layer == 1): return 1.4 + self.jumpOffsetY
         return 1.9 + self.jumpOffsetY
 
     def get_gravity(self, lineLayer, beforeJumpLineLayer):
         num = (self.JD / self.NJS * 0.5)
-        return (2.0 * (this.highest_jump_pos_y_for_line_layer(lineLayer) - self.get_y_pos_from_layer(beforeJumpLineLayer)) / (num * num))
+        return (2.0 * (self.highest_jump_pos_y_for_line_layer(lineLayer) - self.get_y_pos_from_layer(beforeJumpLineLayer)) / (num * num))
 
 
 def create_note_position_function(map: Map, note: Note, bsor: Bsor):
@@ -137,7 +144,7 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
 
-    def position(time: float, frame: Frame) -> Union(Vector3, None):
+    def position(time: float, frame: Frame):
         relative_time = time - movement_start_time  # Called num1 in source
 
         # Called floor movement in code
@@ -185,6 +192,6 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
             num2 = (percentage_of_jump - 0.75) / 0.25
             local_pos.z -= lerp_unclamped(0, end_distance_offset * num2 * num2 * num2)
 
-        return world_rotation * local_pos
+        return local_pos.rotate(world_rotation)
 
     return position
