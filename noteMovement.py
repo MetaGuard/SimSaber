@@ -85,7 +85,9 @@ class MovementData:
             0, self.get_y_pos_from_layer(before_note_line_layer), 0)
 
     def get_y_pos_from_layer(self, layer):
-        return 0
+        if (layer == 0): return 0.25
+        if (layer == 1): return 0.85
+        return 1.45
 
     def get_gravity(self):
         return 9.8
