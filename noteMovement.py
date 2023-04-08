@@ -28,14 +28,18 @@ def quadratic_in_out(t):
         return 2 * t * t
     return (4 - 2 * t) * t - 1
 
+def head_offset_z(noteInverseWorldRotation, headPseudoLocalPos):
+    return (noteInverseWorldRotation * headPseudoLocalPos).z;
 
-def move_towards_head(a, b, q, t):
-    return a
+def get_z_pos(start, end, headOffsetZ, t):
+    return lerp_unclamped(start + headOffsetZ * min(1, t * 2), end + headOffsetZ, t)
 
+def move_towards_head(start, end, noteInverseWorldRotation, t, headPseudoLocalPos):
+    headOffsetZ = head_offset_z(noteInverseWorldRotation, headPseudoLocalPos)
+    return get_z_pos(start, end, headOffsetZ, t)
 
 def quat_slerp(p, q, t):
-    return lerp(p, q, t)   # This is incorrect
-
+    return Quaternion.Slerp(p, q, t)
 
 def look_rotation(forwards, up):
     return Quaternion(0, 0, 0, 1)
@@ -133,7 +137,7 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
 
-    def position(time: float) -> Union(Vector3, None):
+    def position(time: float, frame: Frame) -> Union(Vector3, None):
         relative_time = time - movement_start_time  # Called num1 in source
 
         # Called floor movement in code
@@ -155,7 +159,8 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
             local_pos.x = lerp_unclamped(start_pos, end_pos, quadratic_in_out(percentage_of_jump * 4))
 
         local_pos.y = start_pos.y + start_vertical_velocity * relative_time - gravity * relative_time * relative_time
-        local_pos.z = move_towards_head(start_pos.z, end_pos.z, inverse_world_rotation, percentage_of_jump)
+        headPseudoLocalPos = Vector3(frame.head.x, frame.head.y, frame.head.z)
+        local_pos.z = move_towards_head(start_pos.z, end_pos.z, inverse_world_rotation, percentage_of_jump, headPseudoLocalPos)
 
         if y_avoidance != 0 and percentage_of_jump < 0.25:
             local_pos.y += (0.5 - cos(percentage_of_jump * 8 * π)) * y_avoidance
