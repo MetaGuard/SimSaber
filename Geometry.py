@@ -1,4 +1,4 @@
-from math import acos, sqrt
+from math import acos, sqrt, sin
 from typing import *
 
 
@@ -25,8 +25,19 @@ class Quaternion:
             self.x * other.w + self.w * other.x + self.y * other.z - self.z * other.y
         )
 
+    def __rmul__(self, scalar):
+        return Quaternion(self.x * scalar, self.y * scalar, self.z * scalar, self.w * scalar)
+
     def conjugate(self):
         return Quaternion(self.x, -self.y, -self.z, -self.w)
+
+    def dot(self, q):
+        return self.x * q.x + self.y * q.y + self.z * q.z + self.w * q.w
+
+    @staticmethod
+    def Slerp(q0, q1, u):
+        θ = acos(q0.dot(q1))
+        return (sin((1 - u) * θ) / sin(θ)) * q0 + (sin(u * θ) / sin(θ)) * q1
 
 
 class Vector3:
