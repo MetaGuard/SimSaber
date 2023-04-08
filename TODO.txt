@@ -16,7 +16,7 @@ TO LEARN:
       - middle_rotation [Beat Saber Function]
       - _playerTransforms.MoveTowardsHead [Beat Saber Function]
       - ~~get_y_pos_from_layer  [Beat Saber Function]~~
-      - get_gravity [Beat Saber Function]
+      - ~~get_gravity [Beat Saber Function]~~
     - Hitbox sizes for notes
     - Bomb hitbox size and shape
     - Obstacle hitbox

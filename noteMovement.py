@@ -76,9 +76,18 @@ class MovementData:
         self.jump_end_pos = self.center_pos - forward_vec * (self.jump_distance * 0.5)
         self.move_start_pos = self.center_pos + forward_vec * (self.move_distance + self.jump_distance * 0.5)
         self.spawn_ahead_time = self.move_duration + self.jump_duration * 0.5
+        self.NJS = start_NJS
+        self.JD = bsor.info.jumpDistance
+        self.jumpOffsetY = get_y_offset_from_height(bsor.info.height) ### todo: dynamic height
 
         note_offset_1 = self.get_note_offset(note_data.line_index, note_data.line_layer)
-        self.jump_gravity = self.get_gravity()
+        self.jump_gravity = self.get_gravity(note_data.line_layer, note_data.line_layer)
+
+    def clamp(self, num, min_value, max_value):
+       return max(min(num, max_value), min_value)
+
+    def get_y_offset_from_height(self, playerHeight):
+        return this.clamp(((playerHeight - 1.7999999523162842) * 0.5), -0.2, 0.6)
 
     def get_note_offset(self, line_index, before_note_line_layer):
         return self.right_vec * ((-(self.note_lines_count - 1) * 0.5 + line_index) * 0.6) + Vector3(
@@ -89,8 +98,14 @@ class MovementData:
         if (layer == 1): return 0.85
         return 1.45
 
-    def get_gravity(self):
-        return 9.8
+    def highest_jump_pos_y_for_line_layer(self, layer):
+        if (layer == 0): return 0.85 + self.jumpOffsetY
+        if (lineLayer == 1): return 1.4 + self.jumpOffsetY
+        return 1.9 + self.jumpOffsetY
+
+    def get_gravity(self, lineLayer, beforeJumpLineLayer):
+        num = (self.JD / self.NJS * 0.5)
+        return (2.0 * (this.highest_jump_pos_y_for_line_layer(lineLayer) - self.get_y_pos_from_layer(beforeJumpLineLayer)) / (num * num))
 
 
 def create_note_position_function(map: Map, note: Note, bsor: Bsor):
