@@ -126,3 +126,9 @@ class Vector3:
 
     def __neg__(self):
         return Vector3(-self.x, -self.y, -self.z)
+
+    def __str__(self):
+        return "<{0}, {1}, {2}>".format(self.x, self.y, self.z)
+
+    def __repr__(self):
+        return "<{0}, {1}, {2}>".format(self.x, self.y, self.z)
