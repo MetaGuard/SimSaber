@@ -46,9 +46,6 @@ def look_rotation(forwards, up):
 
 
 class NoteData:
-    COLOR_A = 0
-    COLOR_B = 1
-
     def __init__(self, map: Map, note: Note):
         self.time = note.time * 60 / map.beatsPerMinute
         self.line_index = note.lineIndex
@@ -60,11 +57,20 @@ class NoteData:
         self.note_type = note.type
         self.cut_direction = note.cutDirection
         self.gameplay_type = NoteData.GameplayType.NORMAL
+        if note.type == 0:
+            self.color_type = NoteData.ColorType.COLOR_A
+        elif note.type == 0:
+            self.color_type = NoteData.ColorType.COLOR_B
+        else:
+            self.color_type = NoteData.ColorType.NONE
 
     class GameplayType:
         NORMAL = 0
 
-
+    class ColorType:
+        NONE = -1
+        COLOR_A = 0
+        COLOR_B = 1
 
 
 class MovementData:
@@ -76,7 +82,7 @@ class MovementData:
 
     def __init__(self, map: Map, note_data: NoteData, bsor: Bsor):
         self.note_lines_count = 4
-        start_NJS = map.beatMaps["Standard"]["Easy"].noteJumpMovementSpeed  # Called startNoteJumpMovementSpeed
+        start_NJS = map.beatMaps[bsor.info.mode][bsor.info.difficulty].noteJumpMovementSpeed  # Called startNoteJumpMovementSpeed
         start_bpm = map.beatsPerMinute
         self.jump_duration = bsor.info.jumpDistance / start_NJS  # Notably NOT the same way the game calculates it
         self.right_vec = Vector3(1, 0, 0)
@@ -91,7 +97,16 @@ class MovementData:
         self.JD = bsor.info.jumpDistance
         self.jumpOffsetY = self.get_y_offset_from_height(bsor.info.height) ### todo: dynamic height
 
-        note_offset_1 = self.get_note_offset(note_data.line_index, note_data.line_layer)
+        note_offset_1 = self.get_note_offset(note_data.line_index, note_data.before_line_layer)
+        self.jump_end_pos += note_offset_1
+        if note_data.color_type != NoteData.ColorType.NONE:
+            note_offset_2 = self.get_note_offset(note_data.flip_line_index, note_data.before_line_layer)
+            self.move_start_pos += note_offset_2
+            self.move_end_pos += note_offset_2
+        else:
+            self.move_start_pos += note_offset_1
+            self.move_end_pos += note_offset_1
+
         self.jump_gravity = self.get_gravity(note_data.line_layer, note_data.line_layer)
 
     def clamp(self, num, min_value, max_value):
@@ -132,7 +147,7 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     gravity = movement_data.jump_gravity
     start_vertical_velocity = gravity * movement_data.jump_duration / 2
     y_avoidance = note_data.flip_y_side * 0.15 if note_data.flip_y_side <= 0 else note_data.flip_y_side * 0.45
-    end_rotation = note_data.cut_direction + note_data.cut_direction_angle_offset
+    end_rotation = Quaternion(0, 0, 0, 1)  # ###
     middle_rotation = end_rotation
     if note_data.gameplay_type == NoteData.GameplayType.NORMAL:
         pass   # This is useRandomRotation. Needs Euler angles caulculations
@@ -143,6 +158,10 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     world_to_player_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
     rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
+
+
+    # print("movement start: ", movement_start_time)
+    # print("jump start: ", jump_start_time)
 
     def position(time: float, frame: Frame):
         relative_time = time - movement_start_time  # Called num1 in source
@@ -165,7 +184,7 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
         else:
             local_pos.x = lerp_unclamped(start_pos, end_pos, quadratic_in_out(percentage_of_jump * 4))
 
-        local_pos.y = start_pos.y + start_vertical_velocity * relative_time - gravity * relative_time * relative_time
+        local_pos.y = start_pos.y + start_vertical_velocity * relative_time - gravity * relative_time * relative_time * 0.5
         headPseudoLocalPos = Vector3(frame.head.x, frame.head.y, frame.head.z)
         local_pos.z = move_towards_head(start_pos.z, end_pos.z, inverse_world_rotation, percentage_of_jump, headPseudoLocalPos)
 
@@ -181,16 +200,16 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
             if rotate_towards_player:
                 head_pseudo_location = Vector3(0, 0, 0)  # ###
                 head_pseudo_location.y = lerp(head_pseudo_location.y, local_pos.y, 0.8)
-                normalized = (local_pos - inverse_world_rotation * head_pseudo_location)
-                vector3 = world_to_player_rotation * rotated_object_up
-                b = look_rotation(normalized, inverse_world_rotation * vector3)
+                normalized = (local_pos - head_pseudo_location.rotate(inverse_world_rotation) )
+                vector3 = rotated_object_up.rotate(world_to_player_rotation)
+                b = look_rotation(normalized, vector3.rotate(inverse_world_rotation))
                 rotated_object_local_rotation = lerp(a, b, percentage_of_jump * 2)
             else:
                 rotated_object_local_rotation = a
 
         if percentage_of_jump >= 0.75:
             num2 = (percentage_of_jump - 0.75) / 0.25
-            local_pos.z -= lerp_unclamped(0, end_distance_offset * num2 * num2 * num2)
+            local_pos.z -= lerp_unclamped(0, end_distance_offset, num2 * num2 * num2)
 
         return local_pos.rotate(world_rotation)
 
