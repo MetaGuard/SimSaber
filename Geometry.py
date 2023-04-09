@@ -15,21 +15,27 @@ class Quaternion:
         self.w = w
 
     def __add__(self, other):
-        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w)
+        return Quaternion(self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w)
+    
+    def __sub__(self, other):
+        return Quaternion(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
 
     def __mul__(self, other):
-        return Quaternion(
-            self.x * other.x - self.y * other.y - self.z * other.z - self.w * other.w,
-            self.x * other.y + self.y * other.x + self.z * other.w - self.w * other.z,
-            self.x * other.z + self.z * other.x + self.w * other.y - self.y * other.w,
-            self.x * other.w + self.w * other.x + self.y * other.z - self.z * other.y
-        )
+        if type(other) is Quaternion:
+            return Quaternion(
+                self.w * other.x + self.x * other.w + self.y * other.z - self.z * other.y,
+                self.w * other.y + self.y * other.w + self.z * other.x - self.x * other.z,
+                self.w * other.z + self.z * other.w + self.x * other.y - self.y * other.x,
+                self.w * other.w - self.x * other.x - self.y * other.y - self.z * other.z
+            )
+        else:
+            return other * self
 
     def __rmul__(self, scalar):
         return Quaternion(self.x * scalar, self.y * scalar, self.z * scalar, self.w * scalar)
 
     def conjugate(self):
-        return Quaternion(self.x, -self.y, -self.z, -self.w)
+        return Quaternion(-self.x, -self.y, -self.z, self.w)
 
     def dot(self, q):
         return self.x * q.x + self.y * q.y + self.z * q.z + self.w * q.w
@@ -70,6 +76,8 @@ class Quaternion:
     @staticmethod
     def Slerp(q0, q1, u):
         θ = acos(q0.dot(q1))
+        if θ == 0:
+            return q0
         return (sin((1 - u) * θ) / sin(θ)) * q0 + (sin(u * θ) / sin(θ)) * q1
 
 
@@ -91,7 +99,7 @@ class Vector3:
         )
 
     def dot(self, other):
-        return self.x * other.x + self.y + other.y + self.z * other.z
+        return self.x * other.x + self.y * other.y + self.z * other.z
 
     def sqr_mag(self):
         return self.dot(self)
@@ -106,8 +114,8 @@ class Vector3:
         return acos(self.dot(other) / sqrt(self.sqr_mag() * other.sqr_mag()))
 
     def rotate(self, quat: Quaternion):
-        quaternion_form = quat * Quaternion(0, self.x, self.y, self.z) * quat.conjugate()
-        return Vector3(quaternion_form.y, quaternion_form.z, quaternion_form.w)
+        quaternion_form = quat * Quaternion(self.x, self.y, self.z, 0) * quat.conjugate()
+        return Vector3(quaternion_form.x, quaternion_form.y, quaternion_form.z)
 
     def __add__(self, other):
         return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
