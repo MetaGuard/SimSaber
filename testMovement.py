@@ -1,0 +1,101 @@
+from noteMovement import create_note_position_function, MovementData, NoteData
+from typeDefs import Map as MAP, BeatMap, Note
+from bsor.Bsor import Bsor, make_bsor
+from matplotlib import pyplot as plt
+import numpy as np
+from interpretMapFiles import create_map
+from Geometry import Vector3
+import pandas as pd
+
+with open('./testing/motion/replay.bsor', 'rb') as f:
+    m = make_bsor(f)
+
+mapFile = create_map('./testing/motion/map')
+testBeatMap = mapFile.beatMaps['Standard']['Easy']
+
+position_function = create_note_position_function(mapFile, testBeatMap.notes[0], m)
+
+actual = pd.read_csv('./testing/motion/motion/4.32_32011.csv').to_numpy()
+
+def distance(x, y):
+    return (x - y).mag()
+
+for index, frame in enumerate([frame for frame in m.frames if frame.time >= 3.8186 and frame.time <= 4.2408]):
+    predicted = position_function(frame.time, frame)
+    observed = Vector3(actual[index][1], actual[index][2], actual[index][3])
+    error = distance(predicted, observed)
+    print("Predicted\tt =", round(frame.time, 5), "\t", round(predicted.x, 5), round(predicted.y, 5), round(predicted.z, 5))
+    print("Observed\tt =", round(actual[index][0], 5), "\t", round(observed.x, 5), round(observed.y, 5), round(observed.z, 5))
+    print("Error\t\tΔ =", round(error, 5), "\n")
+
+
+
+# NUM_NOTES = 1
+# position_funtions = [create_note_position_function(mapFile, testBeatMap.notes[i], m)
+#                      for i in range(NUM_NOTES)]
+#
+#
+#
+# # for frame in m.frames[100:110]:
+# #     print(frame.time, position_function(frame.time, frame))
+#
+# ax = plt.figure().add_subplot(projection='3d')
+#
+# START_FRAME = 0
+# END_FRAME = 900
+#
+#
+# # NoteMovementInfo = MovementData(mapFile, )
+#
+#
+# for i in range(NUM_NOTES):
+#     points = [position_funtions[i](frame.time, frame) for frame in m.frames[START_FRAME:END_FRAME]]
+#     points = np.array([[pos.x, pos.y, pos.z] for pos in points])
+#     ax.scatter(points[:, 0], points[:, 1], points[:, 2])
+#
+# NOTE_INDEX = 3
+#
+# cut_points = np.array([m.notes[i].cut.cutPoint for i in range(NUM_NOTES)])
+#
+# cut_point_vector = Vector3(*cut_points[NOTE_INDEX])
+# #frame = min(m.frames, key=lambda f: abs(f.time - m.notes[NOTE_INDEX].event_time))
+# frame = min(m.frames, key=lambda f: distance(position_funtions[NOTE_INDEX](f.time, f), cut_point_vector))
+#
+# # print('time difference: ', frame.time - m.notes[NOTE_INDEX].event_time)
+# # print(position_funtions[NOTE_INDEX](frame.time, frame))
+# # print('distance: ', (Vector3(*cut_points[NOTE_INDEX]) - position_funtions[NOTE_INDEX](frame.time, frame)).mag())
+# # print(m.notes[NOTE_INDEX].cut.cutDistanceToCenter)
+# print("-----")
+# print(cut_point_vector - position_funtions[NOTE_INDEX](frame.time, frame))
+#
+#
+# distances_for_closest_time_frames = []
+# for i in range(NUM_NOTES):
+#     frame = min(m.frames, key=lambda f: abs(f.time - m.notes[i].event_time))
+#     distances_for_closest_time_frames.append(
+#         distance(position_funtions[i](frame.time, frame), Vector3(*cut_points[i]))
+#         )
+# print(distances_for_closest_time_frames)
+# avg_z_dist = sum(distances_for_closest_time_frames)/NUM_NOTES
+# max_adjusted_distance = max((a - avg_z_dist for a in distances_for_closest_time_frames))
+#
+# diff_vector = cut_point_vector - position_funtions[NOTE_INDEX](frame.time, frame)
+# diff_vector.z -= .25 # max_adjusted_distance
+# print('distance between predicted note position and cutPoint: ', diff_vector.mag())
+# print('cutDistanceToCenter: ', m.notes[NOTE_INDEX].cut.cutDistanceToCenter)
+# print('diff: ', diff_vector.mag() - m.notes[NOTE_INDEX].cut.cutDistanceToCenter)
+#
+# ax.scatter(cut_points[:, 0], cut_points[:, 1], cut_points[:, 2], s=200)
+#
+# ax.set_xlabel('X')
+# ax.set_ylabel('Y')
+# ax.set_zlabel('Z')
+#
+# ax.set_xlim(-1, 1)
+# ax.set_ylim(0, 2)
+# ax.set_zlim(-1, 10)
+#
+# ax.view_init(roll=90)
+# # ax.set_box_aspect(1, 1, 2)
+#
+# # plt.show()
