@@ -109,6 +109,11 @@ class MovementData:
 
         self.jump_gravity = self.get_gravity(note_data.line_layer, note_data.line_layer)
 
+        self.z_offset = 0.25
+        self.move_start_pos.z += self.z_offset
+        self.move_end_pos.z += self.z_offset
+        self.jump_end_pos.z += self.z_offset
+
     def clamp(self, num, min_value, max_value):
         return max(min(num, max_value), min_value)
 
@@ -159,9 +164,6 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
 
-
-    # print("movement start: ", movement_start_time)
-    # print("jump start: ", jump_start_time)
 
     def position(time: float, frame: Frame):
         relative_time = time - movement_start_time  # Called num1 in source
