@@ -16,7 +16,7 @@ class Quaternion:
 
     def __add__(self, other):
         return Quaternion(self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w)
-    
+
     def __sub__(self, other):
         return Quaternion(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
 
@@ -140,3 +140,7 @@ class Vector3:
 
     def __repr__(self):
         return "<{0}, {1}, {2}>".format(self.x, self.y, self.z)
+
+    @staticmethod
+    def distance(v, u):
+        return (v - u).mag()
