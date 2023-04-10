@@ -7,27 +7,31 @@ from interpretMapFiles import create_map
 from Geometry import Vector3
 import pandas as pd
 
-with open('./testing/motion/replay.bsor', 'rb') as f:
+
+TESTING_PATH = './testing/Bang/'
+MOTION_FILE_NAME = '2.142857_32011.csv'
+
+with open(TESTING_PATH + 'replay.bsor', 'rb') as f:
     m = make_bsor(f)
 
-mapFile = create_map('./testing/motion/map')
-testBeatMap = mapFile.beatMaps['Standard']['Easy']
+mapFile = create_map(TESTING_PATH + 'map')
+testBeatMap = mapFile.beatMaps[m.info.mode][m.info.difficulty]
 
 position_function = create_note_position_function(mapFile, testBeatMap.notes[0], m)
 
-actual = pd.read_csv('./testing/motion/motion/4.32_32011.csv').to_numpy()
 
-def distance(x, y):
-    return (x - y).mag()
+actual = pd.read_csv(TESTING_PATH + 'motion/' + MOTION_FILE_NAME).to_numpy()
+first_time = actual[0][0] - 0.001
+last_time = actual[-1][0]
 
-for index, frame in enumerate([frame for frame in m.frames if frame.time >= 3.8186 and frame.time <= 4.2408]):
+
+for index, frame in enumerate([frame for frame in m.frames if first_time <= frame.time <= last_time]):
     predicted = position_function(frame.time, frame)
     observed = Vector3(actual[index][1], actual[index][2], actual[index][3])
-    error = distance(predicted, observed)
+    error = Vector3.distance(predicted, observed)
     print("Predicted\tt =", round(frame.time, 5), "\t", round(predicted.x, 5), round(predicted.y, 5), round(predicted.z, 5))
     print("Observed\tt =", round(actual[index][0], 5), "\t", round(observed.x, 5), round(observed.y, 5), round(observed.z, 5))
     print("Error\t\tΔ =", round(error, 5), "\n")
-
 
 
 # NUM_NOTES = 1
