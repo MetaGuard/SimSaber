@@ -1,0 +1,227 @@
+{
+  "_version": "2.0.0",
+  "_songName": "Naughty little demon",
+  "_songSubName": "(ED version)",
+  "_songAuthorName": "Minari",
+  "_levelAuthorName": "Hoppaw",
+  "_beatsPerMinute": 125,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 15,
+  "_previewDuration": 15,
+  "_songFilename": "song.egg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "KDAEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_contributors": []
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Easy",
+          "_difficultyRank": 1,
+          "_beatmapFilename": "EasyStandard.dat",
+          "_noteJumpMovementSpeed": 12,
+          "_noteJumpStartBeatOffset": 0.5,
+          "_customData": {
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": [],
+            "_colorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_colorRight": {
+              "r": 0.2307400405406952,
+              "g": 0.2307400405406952,
+              "b": 0.2307400405406952
+            },
+            "_obstacleColor": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            },
+            "_envColorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_envColorRight": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            }
+          }
+        },
+        {
+          "_difficulty": "Normal",
+          "_difficultyRank": 3,
+          "_beatmapFilename": "NormalStandard.dat",
+          "_noteJumpMovementSpeed": 14,
+          "_noteJumpStartBeatOffset": 0.3499999940395355,
+          "_customData": {
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": [],
+            "_colorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_colorRight": {
+              "r": 0.2307400405406952,
+              "g": 0.2307400405406952,
+              "b": 0.2307400405406952
+            },
+            "_obstacleColor": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            },
+            "_envColorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_envColorRight": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            }
+          }
+        },
+        {
+          "_difficulty": "Hard",
+          "_difficultyRank": 5,
+          "_beatmapFilename": "HardStandard.dat",
+          "_noteJumpMovementSpeed": 16,
+          "_noteJumpStartBeatOffset": 0.25,
+          "_customData": {
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": [],
+            "_colorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_colorRight": {
+              "r": 0.2307400405406952,
+              "g": 0.2307400405406952,
+              "b": 0.2307400405406952
+            },
+            "_obstacleColor": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            },
+            "_envColorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_envColorRight": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            }
+          }
+        },
+        {
+          "_difficulty": "Expert",
+          "_difficultyRank": 7,
+          "_beatmapFilename": "ExpertStandard.dat",
+          "_noteJumpMovementSpeed": 17,
+          "_noteJumpStartBeatOffset": 0.20000000298023224,
+          "_customData": {
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": [],
+            "_colorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_colorRight": {
+              "r": 0.2307400405406952,
+              "g": 0.2307400405406952,
+              "b": 0.2307400405406952
+            },
+            "_obstacleColor": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            },
+            "_envColorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_envColorRight": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            }
+          }
+        },
+        {
+          "_difficulty": "ExpertPlus",
+          "_difficultyRank": 9,
+          "_beatmapFilename": "ExpertPlusStandard.dat",
+          "_noteJumpMovementSpeed": 19,
+          "_noteJumpStartBeatOffset": 0.20000000298023224,
+          "_customData": {
+            "_difficultyLabel": "Never Forget Mano Aloe",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": [],
+            "_colorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_colorRight": {
+              "r": 0.2307400405406952,
+              "g": 0.2307400405406952,
+              "b": 0.2307400405406952
+            },
+            "_obstacleColor": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            },
+            "_envColorLeft": {
+              "r": 1,
+              "g": 0.2158605009317398,
+              "b": 0.577580451965332
+            },
+            "_envColorRight": {
+              "r": 0.27049779891967773,
+              "g": 0.13013647496700287,
+              "b": 0.8713670969009399
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
