@@ -1,5 +1,7 @@
 from typeDefs import *
 from json import load
+from os import listdir
+from Geometry import Vector3, Quaternion
 
 
 def create_map(folderPath):
@@ -55,3 +57,30 @@ def populate_beat_map(JSO, beat_map: BeatMap):
 
         beat_map.obstacles.append(obstacle)
     beat_map.obstacles.sort(key=lambda o: o.time)
+
+
+class PositionSeries:
+    times: List[float]
+    positions: List[Vector3]
+    orientations: List[Quaternion]
+    id: str
+
+
+def load_note_movement_data(folder_path: str):
+    notes: List[PositionSeries] = []
+    for file_name in listdir(folder_path):
+        position_series = PositionSeries()
+        position_series.times = []
+        position_series.positions = []
+        position_series.orientations = []
+        position_series.id = file_name.split("_")[1]
+        notes.append(position_series)
+
+        for line in open(folder_path + file_name, "r").readlines()[1:]:
+            entries = (*map(float, line.split(",")),)
+            position_series.times.append(entries[0])
+            position_series.positions.append(Vector3(*entries[1:4]))
+            position_series.orientations.append(Quaternion(*entries[4:]))
+
+    notes.sort(key=lambda n: n.times[0])
+    return notes
