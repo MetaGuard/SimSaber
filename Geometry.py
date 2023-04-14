@@ -144,9 +144,9 @@ class Quaternion:
             v.z = 0
 
         else:
-            v.x = asin(2 * (self.x * self.z - self.w * self.y))
-            v.y = atan2(2 * self.x * self.w + 2 * self.y * self.z, 1 - 2 * (self.z * self.z + self.w * self.w))
-            v.z = atan2(2 * self.x * self.y + 2 * self.z * self.w, 1 - 2 * (self.y * self.y + self.z * self.z))
+            v.x = asin(2 * (self.w * self.x - self.y * self.z))
+            v.y = atan2(2 * self.w * self.y + 2 * self.z * self.x, 1 - 2 * (self.x * self.x + self.y * self.y))
+            v.z = atan2(2 * self.w * self.z + 2 * self.x * self.y, 1 - 2 * (self.z * self.z + self.x * self.x))
 
         v *= RAD_TO_DEG
         v.x %= 360
@@ -156,7 +156,7 @@ class Quaternion:
         return v
 
     def to_Euler(self):
-        return Quaternion.get_Euler(Quaternion(self.w, self.x, self.y, self.z))
+        return Quaternion.get_Euler(Quaternion(self.x, self.y, self.z, self.w))
 
 class Vector3:
     x: float
