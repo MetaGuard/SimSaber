@@ -85,8 +85,8 @@ class Quaternion:
     @staticmethod
     def from_forward_and_up(forward, up):
         x_axis = up.cross(forward).normal()
-        y_axis = up.normal()  # forward.cross(x_axis).normal()
-        z_axis = x_axis.cross(y_axis).normal()  # forward.normal()
+        y_axis = forward.cross(x_axis).normal() # up.normal()
+        z_axis =  forward.normal() # x_axis.cross(y_axis).normal()
         return Quaternion.from_rotation_matrix((
             (x_axis.x, y_axis.x, z_axis.x),
             (x_axis.y, y_axis.y, z_axis.y),
