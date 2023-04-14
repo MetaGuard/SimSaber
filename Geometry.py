@@ -1,4 +1,4 @@
-from math import acos, sqrt, sin, cos, atan2
+from math import acos, sqrt, sin, cos, atan2, asin
 from typing import *
 
 DEG_TO_RAD = 0.0174532924
@@ -41,6 +41,9 @@ class Quaternion:
     def __truediv__(self, scalar):
         return Quaternion(self.x / scalar, self.y / scalar, self.z / scalar, self.w / scalar)
 
+    def __repr__(self):
+        return "/{0}, {1}, {2}, {3}/".format(self.x, self.y, self.z, self.w)
+
     def conjugate(self):
         return Quaternion(-self.x, -self.y, -self.z, self.w)
 
@@ -48,32 +51,42 @@ class Quaternion:
         return self.x * q.x + self.y * q.y + self.z * q.z + self.w * q.w
 
     # https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+    # @staticmethod
+    # def from_rotation_matrix(M):
+    #     if M[2][2] < 0:
+    #         if M[0][0] > M[1][1]:
+    #             t = 1 + M[0][0] - M[1][1] - M[2][2]
+    #             q = Quaternion(t, M[0][1] + M[1][0], M[2][0] + M[0][2], M[1][2] - M[2][1])
+
+    #         else:
+    #             t = 1 - M[0][0] + M[1][1] - M[2][2]
+    #             q = Quaternion(M[0][1] + M[1][0], t, M[1][2] + M[2][1], M[2][0] - M[0][2])
+
+    #     else:
+    #         if M[0][0] < -M[1][1]:
+    #             t = 1 - M[0][0] - M[1][1] + M[2][2]
+    #             q = Quaternion(M[2][0] + M[0][2], M[1][2] + M[2][1], t, M[0][1] - M[1][0])
+
+    #         else:
+    #             t = 1 + M[0][0] + M[1][1] + M[2][2]
+    #             q = Quaternion(M[1][2] - M[2][1], M[2][0] - M[0][2], M[0][1] - M[1][0], t)
+    #     return q * 0.5 / sqrt(t)
+
+    # https://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Rotation_matrix_%E2%86%94_quaternion
     @staticmethod
     def from_rotation_matrix(M):
-        if M[2][2] < 0:
-            if M[0][0] > M[1][1]:
-                t = 1 + M[0][0] - M[1][1] - M[2][2]
-                q = Quaternion(t, M[0][1] + M[1][0], M[2][0] + M[0][2], M[1][2] - M[2][1])
+        w = sqrt(1 + M[0][0] + M[1][1] + M[2][2]) / 2
+        x = (M[2][1] - M[1][2]) / (4 * w)
+        y = (M[0][2] - M[2][0]) / (4 * w)
+        z = (M[1][0] - M[0][1]) / (4 * w)
 
-            else:
-                t = 1 - M[0][0] + M[1][1] - M[2][2]
-                q = Quaternion(M[0][1] + M[1][0], t, M[1][2] + M[2][1], M[2][0] - M[0][2])
-
-        else:
-            if M[0][0] < -M[1][1]:
-                t = 1 - M[0][0] - M[1][1] + M[2][2]
-                q = Quaternion(M[2][0] + M[0][2], M[1][2] + M[2][1], t, M[0][1] - M[1][0])
-
-            else:
-                t = 1 + M[0][0] + M[1][1] + M[2][2]
-                q = Quaternion(M[1][2] - M[2][1], M[2][0] - M[0][2], M[0][1] - M[1][0], t)
-        return q * 0.5 / sqrt(t)
+        return Quaternion(x, y, z, w)
 
     @staticmethod
     def from_forward_and_up(forward, up):
-        x_axis = up.cross(forward)
-        y_axis = up
-        z_axis = forward
+        x_axis = up.cross(forward).normal()
+        y_axis = up.normal()  # forward.cross(x_axis).normal()
+        z_axis = x_axis.cross(y_axis).normal()  # forward.normal()
         return Quaternion.from_rotation_matrix((
             (x_axis.x, y_axis.x, z_axis.x),
             (x_axis.y, y_axis.y, z_axis.y),
@@ -85,11 +98,12 @@ class Quaternion:
         θ = acos(q0.dot(q1))
         if θ == 0:
             return q0
-        return (sin((1 - u) * θ) / sin(θ)) * q0 + (sin(u * θ) / sin(θ)) * q1
+        output = (sin((1 - u) * θ) / sin(θ)) * q0 + (sin(u * θ) / sin(θ)) * q1
+        return output
 
     # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
     @staticmethod
-    def from_Euler(yaw, pitch, roll):
+    def from_Euler(yaw, roll, pitch):
         yaw *= DEG_TO_RAD
         pitch *= DEG_TO_RAD
         roll *= DEG_TO_RAD
@@ -104,49 +118,45 @@ class Quaternion:
         cosRollOver2 = cos(rollOver2)
         sinRollOver2 = sin(rollOver2)
         result = Quaternion(0, 0, 0, 0)
-        result.w = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2
-        result.x = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2
+        result.x = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2
+        result.z = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2
         result.y = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2
-        result.z = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2
+        result.w = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2
 
-        return result
+        return Quaternion(result.y, result.z, result.w, result.x)
 
     # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
-    def to_Euler(self):
-        sqw = self.w * self.w
-        sqx = self.x * self.x
-        sqy = self.y * self.y
-        sqz = self.z * self.z
-        unit = sqx + sqy + sqz + sqw
+    @staticmethod
+    def get_Euler(self):
+        unit = self.dot(self)
 
         test = self.x * self.w - self.y * self.z
         v = Vector3(0, 0, 0)
 
         if test > 0.4995 * unit:
-            v.x = 2 * atan2(self.y, self.x)
-            v.y = PI / 2
+            v.x = PI / 2
+            v.y = 2 * atan2(self.y, self.x)
             v.z = 0
-            return normalize_angles(v * RAD_TO_DEG)
 
-        if test < -0.4995 * unit:
-            v.x = -2 * atan2(self.y, self.x)
-            v.y = -PI / 2
+        elif test < -0.4995 * unit:
+            v.x = -PI / 2
+            v.y = -2 * atan2(self.y, self.x)
             v.z = 0
-            return normalize_angles(v * RAD_TO_DEG)
 
-        v.x = atan2(2 * self.x * self.w + 2 * self.y * self.z, 1 - 2 * (self.z * self.z + self.w * self.w))
-        v.y = atan2(2 * (self.x * self.z - self.w * self.y))
-        v.z = atan2(2 * self.x * self.y + 2 * self.z * self.w, 1 - 2 * (self.y * self.y + self.z * self.z))
+        else:
+            v.x = asin(2 * (self.x * self.z - self.w * self.y))
+            v.y = atan2(2 * self.x * self.w + 2 * self.y * self.z, 1 - 2 * (self.z * self.z + self.w * self.w))
+            v.z = atan2(2 * self.x * self.y + 2 * self.z * self.w, 1 - 2 * (self.y * self.y + self.z * self.z))
 
-        return normalize_angles(v * RAD_TO_DEG)
+        v *= RAD_TO_DEG
+        v.x %= 360
+        v.y %= 360
+        v.z %= 360
 
+        return v
 
-def normalize_angles(angles):
-    angles.x %= 360
-    angles.y %= 360
-    angles.z %= 360
-    return angles
-
+    def to_Euler(self):
+        return Quaternion.get_Euler(Quaternion(self.w, self.x, self.y, self.z))
 
 class Vector3:
     x: float
@@ -160,7 +170,7 @@ class Vector3:
 
     def cross(self, other):
         return Vector3(
-            self.y * other.z - self.z * other.z,
+            self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
             self.x * other.y - self.y * other.x
         )
@@ -193,7 +203,7 @@ class Vector3:
     def __rmul__(self, scalar):
         return Vector3(self.x * scalar, self.y * scalar, self.z * scalar)
 
-    def __div__(self, scalar):
+    def __truediv__(self, scalar):
         return Vector3(self.x / scalar, self.y / scalar, self.z / scalar)
 
     def __sub__(self, other):
@@ -220,3 +230,20 @@ class Orientation:
     def __init__(self, pos, rot):
         self.position = pos
         self.rotation = rot
+
+
+if __name__ == "__main__":
+    q = Quaternion(1 / sqrt(30), 2 / sqrt(30), 3 / sqrt(30), 4 / sqrt(30))
+    q_q = q * q.conjugate()
+    print(q_q.x, q_q.y, q_q.z, q_q.w)
+    euler = q.to_Euler()
+    q2 = Quaternion.from_Euler(euler.x, euler.y, euler.z)
+    print(q.x, q.y, q.z, q.w, q.dot(q))
+    print(q2.x, q2.y, q2.z, q2.w, q2.dot(q2))
+
+    print(euler)
+    print(q2.to_Euler())
+    q = Quaternion.from_forward_and_up(Vector3(3, 0, 4), Vector3(0, 1, 0))
+    print("X: ", Vector3(1, 0, 0).rotate(q))
+    print("Y: ", Vector3(0, 1, 0).rotate(q))
+    print("Z: ", Vector3(0, 0, 1).rotate(q))
