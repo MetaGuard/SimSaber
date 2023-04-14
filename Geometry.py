@@ -1,5 +1,9 @@
-from math import acos, sqrt, sin
+from math import acos, sqrt, sin, cos, atan2
 from typing import *
+
+DEG_TO_RAD = 0.0174532924
+PI = 3.14159274
+RAD_TO_DEG = 57.29578
 
 
 class Quaternion:
@@ -33,6 +37,9 @@ class Quaternion:
 
     def __rmul__(self, scalar):
         return Quaternion(self.x * scalar, self.y * scalar, self.z * scalar, self.w * scalar)
+
+    def __truediv__(self, scalar):
+        return Quaternion(self.x / scalar, self.y / scalar, self.z / scalar, self.w / scalar)
 
     def conjugate(self):
         return Quaternion(-self.x, -self.y, -self.z, self.w)
@@ -79,6 +86,66 @@ class Quaternion:
         if θ == 0:
             return q0
         return (sin((1 - u) * θ) / sin(θ)) * q0 + (sin(u * θ) / sin(θ)) * q1
+
+    # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
+    @staticmethod
+    def from_Euler(yaw, pitch, roll):
+        yaw *= DEG_TO_RAD
+        pitch *= DEG_TO_RAD
+        roll *= DEG_TO_RAD
+
+        yawOver2 = yaw * 0.5
+        cosYawOver2 = cos(yawOver2)
+        sinYawOver2 = sin(yawOver2)
+        pitchOver2 = pitch * 0.5
+        cosPitchOver2 = cos(pitchOver2)
+        sinPitchOver2 = sin(pitchOver2)
+        rollOver2 = roll * 0.5
+        cosRollOver2 = cos(rollOver2)
+        sinRollOver2 = sin(rollOver2)
+        result = Quaternion(0, 0, 0, 0)
+        result.w = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2
+        result.x = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2
+        result.y = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2
+        result.z = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2
+
+        return result
+
+    # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
+    def to_Euler(self):
+        sqw = self.w * self.w
+        sqx = self.x * self.x
+        sqy = self.y * self.y
+        sqz = self.z * self.z
+        unit = sqx + sqy + sqz + sqw
+
+        test = self.x * self.w - self.y * self.z
+        v = Vector3(0, 0, 0)
+
+        if test > 0.4995 * unit:
+            v.x = 2 * atan2(self.y, self.x)
+            v.y = PI / 2
+            v.z = 0
+            return normalize_angles(v * RAD_TO_DEG)
+
+        if test < -0.4995 * unit:
+            v.x = -2 * atan2(self.y, self.x)
+            v.y = -PI / 2
+            v.z = 0
+            return normalize_angles(v * RAD_TO_DEG)
+
+        v.x = atan2(2 * self.x * self.w + 2 * self.y * self.z, 1 - 2 * (self.z * self.z + self.w * self.w))
+        v.y = atan2(2 * (self.x * self.z - self.w * self.y))
+        v.z = atan2(2 * self.x * self.y + 2 * self.z * self.w, 1 - 2 * (self.y * self.y + self.z * self.z))
+
+        return normalize_angles(v * RAD_TO_DEG)
+
+
+def normalize_angles(angles):
+    angles.x %= 360
+    angles.y %= 360
+    angles.z %= 360
+    return angles
 
 
 class Vector3:
@@ -144,3 +211,12 @@ class Vector3:
     @staticmethod
     def distance(v, u):
         return (v - u).mag()
+
+
+class Orientation:
+    position: Vector3
+    rotation: Quaternion
+
+    def __init__(self, pos, rot):
+        self.position = pos
+        self.rotation = rot

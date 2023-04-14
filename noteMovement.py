@@ -7,7 +7,7 @@ from typeDefs import *
 from typing import *
 from math import cos, sin, pi as π
 from numpy import single
-from Geometry import Vector3, Quaternion
+from Geometry import Vector3, Quaternion, Orientation
 from bsor.Bsor import Bsor, Frame
 
 
@@ -42,7 +42,7 @@ def quat_slerp(p, q, t):
     return Quaternion.Slerp(p, q, t)
 
 def look_rotation(forwards, up):
-    return Quaternion(0, 0, 0, 1)
+    return Quaternion.from_forward_and_up(forwards, up)
 
 
 class NoteData:
@@ -72,6 +72,18 @@ class NoteData:
         COLOR_A = 0
         COLOR_B = 1
 
+    class CutDirection:
+        Up = 0
+        Down = 1
+        Left = 2
+        Right = 3
+        UpLeft = 4
+        UpRight = 5
+        DownLeft = 6
+        DownRight = 7
+        Any = 8
+        NONE = 9
+
 
 class MovementData:
     BEAT_OFFSET = 0
@@ -95,7 +107,8 @@ class MovementData:
         self.spawn_ahead_time = self.move_duration + self.jump_duration * 0.5
         self.NJS = start_NJS
         self.JD = bsor.info.jumpDistance
-        self.jumpOffsetY = self.get_y_offset_from_height(bsor.info.height) ### todo: dynamic height
+        self.jumpOffsetY = self.get_y_offset_from_height(bsor.info.height)  ### todo: dynamic height
+        self.end_rotation = self.get_rotation_angle(note_data.cut_direction) + note_data.cut_direction_angle_offset
 
         note_offset_1 = self.get_note_offset(note_data.line_index, note_data.before_line_layer)
         self.jump_end_pos += note_offset_1
@@ -138,7 +151,27 @@ class MovementData:
         num = (self.JD / self.NJS * 0.5)
         return (2.0 * (self.highest_jump_pos_y_for_line_layer(lineLayer) - self.get_y_pos_from_layer(beforeJumpLineLayer)) / (num * num))
 
+    def get_rotation_angle(self, cut_direction):
+        if cut_direction == NoteData.CutDirection.Up:
+            return -180
+        if cut_direction == NoteData.CutDirection.Down:
+            return 0
+        if cut_direction == NoteData.CutDirection.Left:
+            return -90
+        if cut_direction == NoteData.CutDirection.Right:
+            return 90
+        if cut_direction == NoteData.CutDirection.UpLeft:
+            return -135
+        if cut_direction == NoteData.CutDirection.UpRight:
+            return 135
+        if cut_direction == NoteData.CutDirection.DownLeft:
+            return -45
+        if cut_direction == NoteData.CutDirection.DownRight:
+            return 45
+        return 0
 
+
+# Should be replaced with create_note_orientation_updater
 def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     note_data = NoteData(map, note)
     movement_data = MovementData(map, note_data, bsor)
@@ -152,18 +185,22 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
     gravity = movement_data.jump_gravity
     start_vertical_velocity = gravity * movement_data.jump_duration / 2
     y_avoidance = note_data.flip_y_side * 0.15 if note_data.flip_y_side <= 0 else note_data.flip_y_side * 0.45
-    end_rotation = Quaternion(0, 0, 0, 1)  # ###
-    middle_rotation = end_rotation
+
+    end_rotation = Quaternion.from_Euler(0, 0, movement_data.end_rotation)  # ###
+    euler_angles = end_rotation.to_Euler()
     if note_data.gameplay_type == NoteData.GameplayType.NORMAL:
-        pass   # This is useRandomRotation. Needs Euler angles caulculations
+        # abs and % are in opposite order to that of the code since % is different in python vs C#
+        index = abs(round(note_data.time * 10 + jump_end_pos.x * 2 + jump_end_pos.y * 2)) % NUM_RANDOM_ROTATIONS
+        euler_angles += RANDOM_ROTATIONS[index]
+    middle_rotation = Quaternion.from_Euler(euler_angles.x, euler_angles.y, euler_angles.z)
     start_rotation = Quaternion(0, 0, 0, 1)
+
     rotate_towards_player = note_data.gameplay_type == NoteData.GameplayType.NORMAL
     world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
     inverse_world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
     world_to_player_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
     rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
-
 
     def position(time: float, frame: Frame):
         relative_time = time - movement_start_time  # Called num1 in source
@@ -208,6 +245,8 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
                 rotated_object_local_rotation = lerp(a, b, percentage_of_jump * 2)
             else:
                 rotated_object_local_rotation = a
+        else:
+            rotated_object_local_rotation = Quaternion(0, 0, 0, 1)
 
         if percentage_of_jump >= 0.75:
             num2 = (percentage_of_jump - 0.75) / 0.25
@@ -216,3 +255,97 @@ def create_note_position_function(map: Map, note: Note, bsor: Bsor):
         return local_pos.rotate(world_rotation)
 
     return position
+
+
+RANDOM_ROTATIONS = [
+    Vector3(-0.9543871, -0.1183784, 0.2741019),
+    Vector3(0.7680854, -0.08805521, 0.6342642),
+    Vector3(-0.6780157, 0.306681, -0.6680131),
+    Vector3(0.1255014, 0.9398643, 0.3176546),
+    Vector3(0.365105, -0.3664974, -0.8557909),
+    Vector3(-0.8790653, -0.06244748, -0.4725934),
+    Vector3(0.01886305, -0.8065798, 0.5908241),
+    Vector3(-0.1455435, 0.8901445, 0.4318099),
+    Vector3(0.07651193, 0.9474725, -0.3105508),
+    Vector3(0.1306983, -0.2508438, -0.9591639)
+]
+NUM_RANDOM_ROTATIONS = len(RANDOM_ROTATIONS)
+
+
+def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
+    note_data = NoteData(map, note)
+    movement_data = MovementData(map, note_data, bsor)
+    movement_start_time = note_data.time - movement_data.move_duration - movement_data.jump_duration / 2
+    jump_start_time = note_data.time - movement_data.jump_duration / 2
+    move_duration = movement_data.move_duration
+    jump_duration = movement_data.jump_duration
+    floor_movement_start_pos = movement_data.move_start_pos
+    floor_movement_end_pos = movement_data.move_end_pos
+    jump_end_pos = movement_data.jump_end_pos
+    gravity = movement_data.jump_gravity
+    start_vertical_velocity = gravity * movement_data.jump_duration / 2
+    y_avoidance = note_data.flip_y_side * 0.15 if note_data.flip_y_side <= 0 else note_data.flip_y_side * 0.45
+    end_rotation = Quaternion(0, 0, 0, 1)  # ###
+    middle_rotation = end_rotation
+    if note_data.gameplay_type == NoteData.GameplayType.NORMAL:
+        pass   # This is useRandomRotation. Needs Euler angles caulculations
+    start_rotation = Quaternion(0, 0, 0, 1)
+    rotate_towards_player = note_data.gameplay_type == NoteData.GameplayType.NORMAL
+    world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
+    inverse_world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
+    world_to_player_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
+    rotated_object_up = Vector3(0, 1, 0)  # ###
+    end_distance_offset = 500
+
+    def update(frame: Frame, object: Orientation):
+        time = frame.time
+        relative_time = time - movement_start_time  # Called num1 in source
+
+        # Called floor movement in code
+        if relative_time < move_duration:
+            return lerp(floor_movement_start_pos, floor_movement_end_pos, relative_time / move_duration)
+
+        relative_time = time - jump_start_time  # Called num1 in source
+        start_pos = floor_movement_end_pos
+        end_pos = jump_end_pos
+        percentage_of_jump = relative_time / jump_duration  # Called t in source
+
+        local_pos = Vector3(0, 0, 0)  # Called localPosition in source
+
+        if start_pos.x == end_pos.x:
+            local_pos.x = start_pos.x
+        elif percentage_of_jump >= 0.25:
+            local_pos.x = end_pos.x
+        else:
+            local_pos.x = lerp_unclamped(start_pos, end_pos, quadratic_in_out(percentage_of_jump * 4))
+
+        local_pos.y = start_pos.y + start_vertical_velocity * relative_time - gravity * relative_time * relative_time * 0.5
+        headPseudoLocalPos = Vector3(frame.head.x, frame.head.y, frame.head.z)
+        local_pos.z = move_towards_head(start_pos.z, end_pos.z, inverse_world_rotation, percentage_of_jump, headPseudoLocalPos)
+
+        if y_avoidance != 0 and percentage_of_jump < 0.25:
+            local_pos.y += (0.5 - cos(percentage_of_jump * 8 * π)) * y_avoidance
+
+        if percentage_of_jump < 0.5:
+            if percentage_of_jump >= 0.25:
+                a = quat_slerp(middle_rotation, end_rotation, sin((percentage_of_jump - 0.125) * π * 2))
+            else:
+                a = quat_slerp(start_rotation, middle_rotation, sin((percentage_of_jump * π * 4)))
+
+            if rotate_towards_player:
+                head_pseudo_location = Vector3(0, 0, 0)  # ###
+                head_pseudo_location.y = lerp(head_pseudo_location.y, local_pos.y, 0.8)
+                normalized = (local_pos - head_pseudo_location.rotate(inverse_world_rotation) )
+                vector3 = rotated_object_up.rotate(world_to_player_rotation)
+                b = look_rotation(normalized, vector3.rotate(inverse_world_rotation))
+                object.rotation = lerp(a, b, percentage_of_jump * 2)
+            else:
+                object.rotation = a
+
+        if percentage_of_jump >= 0.75:
+            num2 = (percentage_of_jump - 0.75) / 0.25
+            local_pos.z -= lerp_unclamped(0, end_distance_offset, num2 * num2 * num2)
+
+        object.position = local_pos.rotate(world_rotation)
+
+    return update
