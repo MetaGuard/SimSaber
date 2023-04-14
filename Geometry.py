@@ -103,7 +103,7 @@ class Quaternion:
 
     # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
     @staticmethod
-    def from_Euler(yaw, roll, pitch):
+    def from_Euler(yaw, pitch, roll):
         yaw *= DEG_TO_RAD
         pitch *= DEG_TO_RAD
         roll *= DEG_TO_RAD
@@ -118,12 +118,12 @@ class Quaternion:
         cosRollOver2 = cos(rollOver2)
         sinRollOver2 = sin(rollOver2)
         result = Quaternion(0, 0, 0, 0)
-        result.x = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2
-        result.z = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2
+        result.w = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2
+        result.x = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2
         result.y = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2
-        result.w = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2
+        result.z = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2
 
-        return Quaternion(result.y, result.z, result.w, result.x)
+        return Quaternion(result.x, result.y, result.z, result.w)
 
     # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
     @staticmethod
