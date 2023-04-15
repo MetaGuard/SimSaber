@@ -58,7 +58,7 @@ class NoteData:
         self.flip_y_side = 0
         self.cut_direction_angle_offset = 0
         self.line_layer = note.lineLayer
-        self.before_line_layer = note.lineLayer
+        self.before_line_layer = 0
         self.note_type = note.type
         self.cut_direction = note.cutDirection
         self.gameplay_type = NoteData.GameplayType.NORMAL
@@ -125,7 +125,7 @@ class MovementData:
             self.move_start_pos += note_offset_1
             self.move_end_pos += note_offset_1
 
-        self.jump_gravity = self.get_gravity(note_data.line_layer, note_data.line_layer)
+        self.jump_gravity = self.get_gravity(note_data.line_layer, note_data.before_line_layer)
 
         self.z_offset = 0.25
         self.move_start_pos.z += self.z_offset
@@ -246,7 +246,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
         elif percentage_of_jump >= 0.25:
             local_pos.x = end_pos.x
         else:
-            local_pos.x = lerp_unclamped(start_pos, end_pos, quadratic_in_out(percentage_of_jump * 4))
+            local_pos.x = lerp_unclamped(start_pos.x, end_pos.x, quadratic_in_out(percentage_of_jump * 4))
 
         local_pos.y = start_pos.y + start_vertical_velocity * relative_time - gravity * relative_time ** 2 * 0.5
         headPseudoLocalPos = Vector3(frame.head.x, frame.head.y, frame.head.z)
@@ -254,7 +254,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
                                         percentage_of_jump, headPseudoLocalPos)
 
         if y_avoidance != 0 and percentage_of_jump < 0.25:
-            local_pos.y += (0.5 - cos(percentage_of_jump * 8 * π)) * y_avoidance
+            local_pos.y += (0.5 - cos(percentage_of_jump * 8 * π) * 0.5) * y_avoidance
 
         if percentage_of_jump < 0.5:
             if percentage_of_jump >= 0.125:
