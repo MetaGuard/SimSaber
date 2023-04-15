@@ -73,11 +73,26 @@ class Quaternion:
 
     @staticmethod
     def Slerp(q0, q1, u):
+        if u < 0:
+            u = 0
+        if u > 1:
+            u = 1
+
         θ = acos(q0.dot(q1))
         if θ == 0:
             return q0
         output = (sin((1 - u) * θ) / sin(θ)) * q0 + (sin(u * θ) / sin(θ)) * q1
-        return output
+        return output / sqrt(output.dot(output))
+
+    @staticmethod
+    def Lerp(q0, q1, u):
+        if u < 0:
+            u = 0
+        if u > 1:
+            u = 1
+
+        output = q0 + (q1 - q0) * u
+        return output / sqrt(output.dot(output))
 
     # https://stackoverflow.com/questions/12088610/conversion-between-euler-quaternion-like-in-unity3d-engine
     @staticmethod

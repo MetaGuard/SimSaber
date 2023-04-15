@@ -227,6 +227,9 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
     rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
 
+    print("eighth_jump", jump_start_time + 0.125 * jump_duration)
+    print("half_jump", jump_start_time + 0.5 * jump_duration)
+
     def update(frame: Frame, object: Orientation):
         time = frame.time
         relative_time = time - movement_start_time  # Called num1 in source
@@ -258,20 +261,20 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
             local_pos.y += (0.5 - cos(percentage_of_jump * 8 * π)) * y_avoidance
 
         if percentage_of_jump < 0.5:
-            if percentage_of_jump >= 0.25:
-                a = quat_slerp(middle_rotation, end_rotation, sin((percentage_of_jump - 0.125) * π * 2))
+            if percentage_of_jump >= 0.125:
+                a = Quaternion.Slerp(middle_rotation, end_rotation, sin((percentage_of_jump - 0.125) * π * 2))
             else:
-                a = quat_slerp(start_rotation, middle_rotation, sin((percentage_of_jump * π * 4)))
+                a = Quaternion.Slerp(start_rotation, middle_rotation, sin((percentage_of_jump * π * 4)))
 
             if rotate_towards_player:
                 head_pseudo_location = Vector3(frame.head.x, frame.head.y, frame.head.z)  # ###
                 head_pseudo_location.y = lerp(head_pseudo_location.y, local_pos.y, 0.8)
-                normalized = (local_pos - head_pseudo_location.rotate(inverse_world_rotation))
+                normalized = (local_pos - head_pseudo_location.rotate(inverse_world_rotation)).normal()
                 rotated_object_up = Vector3(0, 1, 0).rotate(object.rotation)
                 vector3 = rotated_object_up.rotate(world_to_player_rotation)
                 b = look_rotation(normalized, vector3.rotate(inverse_world_rotation))
-                object.rotation = lerp(a, b, percentage_of_jump * 2)
-                object.rotation /= sqrt(object.rotation.dot(object.rotation))
+                object.rotation = Quaternion.Lerp(a, b, percentage_of_jump * 2)
+
             else:
                 object.rotation = a
 
