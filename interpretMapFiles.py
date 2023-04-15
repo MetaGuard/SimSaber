@@ -1,7 +1,7 @@
 from typeDefs import *
 from json import load
 from os import listdir
-from Geometry import Vector3, Quaternion
+from geometry import Vector3, Quaternion
 
 
 def create_map(folderPath):

@@ -1,10 +1,10 @@
 
-from noteMovement import create_note_orientation_updater
+from noteMotion.noteMovement import create_note_orientation_updater
 from bsor.Bsor import make_bsor
 from interpretMapFiles import create_map, load_note_movement_data
-from Geometry import Quaternion, Orientation, Vector3
+from geometry import Quaternion, Orientation, Vector3
 
-TESTING_PATH = './testing/Bang/'
+TESTING_PATH = './testData/Bang/'
 
 replay = make_bsor(open(TESTING_PATH + 'replay.bsor', 'rb'))
 map_file = create_map(TESTING_PATH + 'map')

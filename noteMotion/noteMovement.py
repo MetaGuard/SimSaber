@@ -7,7 +7,7 @@ from typeDefs import *
 from typing import *
 from math import cos, sin, pi as π, sqrt
 from numpy import single
-from Geometry import Vector3, Quaternion, Orientation, RAD_TO_DEG
+from geometry import Vector3, Quaternion, Orientation
 from bsor.Bsor import Bsor, Frame
 
 

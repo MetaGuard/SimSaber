@@ -1,5 +1,5 @@
 from typing import *
-from Geometry import Vector3
+from geometry import Vector3
 
 
 class Obstacle:
