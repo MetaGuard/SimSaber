@@ -81,7 +81,11 @@ def load_note_movement_data(folder_path: str):
         orientation_series.length = 0
         notes.append(orientation_series)
 
-        for line in open(folder_path + file_name, "r").readlines()[1:]:
+        with open(folder_path + file_name, "r") as f:
+            lines = f.readlines()
+            f.close()
+
+        for line in lines[1:]:
             entries = (*map(float, line.split(",")),)
             orientation_series.times.append(entries[0])
             orientation_series.positions.append(Vector3(*entries[1:4]))
