@@ -304,8 +304,6 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
         euler_angles += permute_vector(RANDOM_ROTATIONS[index], PERMUTE) * 20
     middle_rotation = Quaternion.from_Euler(euler_angles.x, euler_angles.y, euler_angles.z)
 
-    print(middle_rotation)
-
     start_rotation = Quaternion(0, 0, 0, 1)
     rotate_towards_player = note_data.gameplay_type == NoteData.GameplayType.NORMAL
     world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
@@ -356,10 +354,6 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
                 rotated_object_up = Vector3(0, 1, 0).rotate(object.rotation)
                 vector3 = rotated_object_up.rotate(world_to_player_rotation)
                 b = look_rotation(normalized, vector3.rotate(inverse_world_rotation))
-                print(b)
-                print(rotated_object_up)
-                print(a)
-                print(percentage_of_jump)
                 object.rotation = lerp(a, b, percentage_of_jump * 2)
                 object.rotation /= sqrt(object.rotation.dot(object.rotation))
             else:

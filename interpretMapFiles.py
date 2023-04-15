@@ -8,7 +8,9 @@ def create_map(folderPath):
     if folderPath[-1] != "/":
         folderPath += "/"
 
-    info_data = load(open(folderPath + "info.dat", "r"))
+    with open(folderPath + "info.dat", "r") as f:
+        info_data = load(f)
+        f.close()
 
     map = Map()
     map.beatsPerMinute = info_data['_beatsPerMinute']
@@ -28,6 +30,7 @@ def create_map(folderPath):
 
             beat_map_file = open(folderPath + diff['_beatmapFilename'], "r")
             populate_beat_map(load(beat_map_file), beat_map)
+            beat_map_file.close()
 
             difficulties[diff['_difficulty']] = beat_map
 
