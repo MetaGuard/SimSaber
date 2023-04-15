@@ -224,11 +224,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
     world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
     inverse_world_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
     world_to_player_rotation = Quaternion(0, 0, 0, 1)  # TBD how iportant this is yet
-    rotated_object_up = Vector3(0, 1, 0)  # ###
     end_distance_offset = 500
-
-    print("eighth_jump", jump_start_time + 0.125 * jump_duration)
-    print("half_jump", jump_start_time + 0.5 * jump_duration)
 
     def update(frame: Frame, object: Orientation):
         time = frame.time
