@@ -301,7 +301,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
     if note_data.gameplay_type == NoteData.GameplayType.NORMAL:
         # abs and % are in opposite order to that of the code since % is different in python vs C#
         index = abs(round(note_data.time * 10 + jump_end_pos.x * 2 + jump_end_pos.y * 2)) % NUM_RANDOM_ROTATIONS
-        euler_angles += permute_vector(RANDOM_ROTATIONS[index], PERMUTE) * RAD_TO_DEG
+        euler_angles += permute_vector(RANDOM_ROTATIONS[index], PERMUTE) * 20
     middle_rotation = Quaternion.from_Euler(euler_angles.x, euler_angles.y, euler_angles.z)
 
     print(middle_rotation)
