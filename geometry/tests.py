@@ -41,6 +41,26 @@ class TestQuaternionEulerAngles(unittest.TestCase):
 
         self.assertQuaternionAlmostEqual(expected, calculated, self.PRECISION)
 
+    def test_lerp(self):
+        q1 = Quaternion(0.25446, 0.15489, 0.07744, 0.95145)
+        q2 = Quaternion(0.61486, 0.64281, 0.41922, 0.18166)
+        expected = Quaternion(0.44814, 0.38760, 0.23562, 0.77034)
+        parameter = 0.37
+
+        calculated = Quaternion.Lerp(q1, q2, parameter)
+
+        self.assertQuaternionAlmostEqual(expected, calculated, self.PRECISION)
+
+    def test_slerp(self):
+        q1 = Quaternion(0.25446, 0.15489, 0.07744, 0.95145)
+        q2 = Quaternion(0.61486, 0.64281, 0.41922, 0.18166)
+        expected = Quaternion(0.45429, 0.39545, 0.24104, 0.76101)
+        parameter = 0.37
+
+        calculated = Quaternion.Slerp(q1, q2, parameter)
+
+        self.assertQuaternionAlmostEqual(expected, calculated, self.PRECISION)
+
 
 if __name__ == '__main__':
     unittest.main()
