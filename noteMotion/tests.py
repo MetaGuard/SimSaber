@@ -4,6 +4,7 @@ from noteMotion import create_note_orientation_updater
 from bsor.Bsor import make_bsor
 from interpretMapFiles import create_map, load_note_movement_data
 from matplotlib import pyplot as plt
+import numpy as np
 
 
 class TestPosition(unittest.TestCase):
@@ -105,6 +106,120 @@ class TestRotation(unittest.TestCase):
         self.beat_map = self.map_file.beatMaps[self.replay.info.mode][self.replay.info.difficulty]
         self.observed_data = load_note_movement_data(TESTING_PATH + 'motion/')[NOTE_INDEX]
         self.updater = create_note_orientation_updater(self.map_file, self.beat_map.notes[NOTE_INDEX], self.replay)
+
+    @unittest.skip
+    def test_plot_diff_over_time(self):
+        TESTING_PATH = './testData/Bang/'
+        NOTE_INDEX = 0
+
+        with open(TESTING_PATH + 'replay.bsor', 'rb') as f:
+            replay = make_bsor(f)
+            f.close()
+
+        map_file = create_map(TESTING_PATH + 'map')
+        beat_map = map_file.beatMaps[replay.info.mode][replay.info.difficulty]
+        observed_data = load_note_movement_data(
+            TESTING_PATH + 'motion/')[NOTE_INDEX]
+        updater = create_note_orientation_updater(
+            map_file, beat_map.notes[NOTE_INDEX], replay)
+        first_time = observed_data.times[0] - 0.001
+        last_time = observed_data.times[-1]
+
+        test_block = Orientation(Vector3(0, 0, 0), Quaternion(0, 0, 0, 1))
+
+        diffs = []
+        times = []
+
+        for index, frame in enumerate([frame for frame in replay.frames if first_time <= frame.time <= last_time]):
+            updater(frame, test_block)
+            observed = observed_data.rotations[index]
+            times.append(frame.time)
+            diff = test_block.rotation - observed
+            diffs.append(diff.dot(diff))
+
+        fig, ax = plt.subplots()
+        ax.plot(times, diffs, linewidth=2.0)
+
+        plt.show()
+
+    def test_plot_3D_rotation(self):
+        TESTING_PATH = './testData/Bang/'
+        NOTE_INDEX = 0
+        fig_to_show = 0
+        show_sphere = False
+
+        with open(TESTING_PATH + 'replay.bsor', 'rb') as f:
+            replay = make_bsor(f)
+            f.close()
+
+        map_file = create_map(TESTING_PATH + 'map')
+        beat_map = map_file.beatMaps[replay.info.mode][replay.info.difficulty]
+        observed_data = load_note_movement_data(
+            TESTING_PATH + 'motion/')[NOTE_INDEX]
+        updater = create_note_orientation_updater(
+            map_file, beat_map.notes[NOTE_INDEX], replay)
+        first_time = observed_data.times[0] - 0.001
+        last_time = observed_data.times[-1]
+
+        test_block = Orientation(Vector3(0, 0, 0), Quaternion(0, 0, 0, 1))
+
+        predicted_rots = []
+        observed_rots = []
+        quotients1 = []
+        quotients2 = []
+        eighth_jump = 1.7667321349893297
+
+        for index, frame in enumerate([frame for frame in replay.frames if first_time <= frame.time <= last_time]):
+            updater(frame, test_block)
+            observed = observed_data.rotations[index]
+            predicted_rots.append(test_block.rotation)
+            observed_rots.append(observed)
+            if frame.time < eighth_jump:
+                quotients1.append(observed.conjugate() * test_block.rotation)
+            else:
+                quotients2.append(observed.conjugate() * test_block.rotation)
+
+        def split_vec_list(vec_list):
+            return ([v.x for v in vec_list], [v.y for v in vec_list], [v.z for v in vec_list])
+
+        ax = plt.figure().add_subplot(projection='3d')
+        # ax.scatter(*split_vec_list([Vector3(0, 1, 0).rotate(q) for q in observed_rots]))
+        # ax.scatter(*split_vec_list([Vector3(0, 0, 1).rotate(q) for q in observed_rots]))
+        # ax.scatter(*split_vec_list([Vector3(0, 1, 0).rotate(q) for q in predicted_rots]))
+        # ax.scatter(*split_vec_list([Vector3(0, 0, 1).rotate(q) for q in predicted_rots]))
+        # ax.scatter(*split_vec_list([Vector3(0, 1, 0).rotate(q) for q in quotients]))
+        # ax.scatter(*split_vec_list([Vector3(0, 0, 1).rotate(q) for q in quotients]))
+        ax.plot(*split_vec_list([Vector3(0, 1, 0).rotate(q) for q in quotients1]), color='cornflowerblue')
+        ax.plot(*split_vec_list([Vector3(0, 0, 1).rotate(q) for q in quotients1]), color='red')
+        ax.plot(*split_vec_list([Vector3(0, 1, 0).rotate(q) for q in quotients2]), color='blue')
+        ax.plot(*split_vec_list([Vector3(0, 0, 1).rotate(q) for q in quotients2]), color='orangered')
+
+        if show_sphere:
+            # sphere
+            u, v = np.mgrid[0:2*np.pi:30j, 0:np.pi:30j]
+            x = np.cos(u)*np.sin(v)
+            y = np.sin(u)*np.sin(v)
+            z = np.cos(v)
+
+            ax.plot_wireframe(x, y, z, color="r", linewidth=0.1)
+
+        if fig_to_show == 0:
+            zoom = .0001
+            # ups
+            ax.set_xlim(-zoom, zoom)
+            ax.set_ylim(1 - zoom, 1 + zoom)
+            ax.set_zlim(-zoom / 5, zoom / 5)
+        elif fig_to_show == 1:
+            zoom = .0001
+            # forwards
+            ax.set_xlim(-zoom, zoom)
+            ax.set_ylim(-zoom/10, zoom/10)
+            ax.set_zlim(1 - zoom, 1 + zoom)
+
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        plt.show()
 
     def test_first_eight_rotation_on_Bang(self):
         first_time = self.observed_data.times[0] - 0.001
