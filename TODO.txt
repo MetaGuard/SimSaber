@@ -48,3 +48,14 @@ TO CODE (based on outline in calculateScore.py):
     - Pre Swing
     - Post Swing
     - Accuracy
+
+Maps to make replays on:
+    - "Curse of the lovely fox"     Hard tech map that has a pattern which (i think) you're
+    supposed to rotate your body/head a significant amount. 
+    - "Teleportal"      Speed/vibro map
+    - "Funk assembly"   Lots of bombs
+    - "Garakuta doll play"      Lots of note swapping.
+    - "Switronic"       Tech that challenges the usual notions of 'parity'
+    - Something with lolope notes
+    - Something with lots of dot notes
+    - Fitbeat song?
