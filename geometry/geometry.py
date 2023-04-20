@@ -220,3 +220,40 @@ class Orientation:
     def __init__(self, pos, rot):
         self.position = pos
         self.rotation = rot
+
+
+class Plane:
+    normal: Vector3
+    center: Vector3
+
+    def __init__(self, normal, center):
+        self.normal = normal
+        self.center = center
+
+    def side(self, point):
+        dot = self.normal.dot(point - self.center)
+        if dot > 0:
+            return 1
+        elif dot < 0:
+            return -1
+        return 0
+
+    def dist_to_point(self, point):
+        return abs(self.line_trace(point, self.normal)[0])
+
+    def line_trace(self, point, dir):
+        if self.side(point) == 0:
+            return (0, point)
+
+        if self.normal.dot(dir) == 0:
+            return (None, None)
+
+        dist = (self.center - point) / self.normal.dot(dir)
+        intersection = point + dist * dir
+        return (dist, intersection)
+
+    def ray_trace(self, point, dir):
+        dist, output = self.line_trace(point, dir)
+        if dist is None or dist < 0:
+            return (None, None)
+        return (dist, output)
