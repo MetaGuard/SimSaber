@@ -1,7 +1,7 @@
 from typing import *
 from typeDefs import SaberMovementData
 from bsor.Bsor import VRObject
-from Geometry import Vector3, Quaternion
+from geometry import Vector3, Quaternion
 
 BUFFER_SIZE = 500
 
@@ -14,10 +14,10 @@ class SaberMovementBuffer:
         data = [None] * BUFFER_SIZE
         nextAddIndex = 0
 
-    def get_curr(self):
+    def get_curr(self) -> SaberMovementData:
         return self.data[(self.nextAddIndex - 1) % BUFFER_SIZE]
 
-    def get_prev(self):
+    def get_prev(self) -> SaberMovementData:
         return self.data[(self.nextAddIndex - 2) % BUFFER_SIZE]
 
     def add_saber_data(self, hand_object: VRObject, time: float):
@@ -44,7 +44,7 @@ class SaberMovementBuffer:
             self.buffer = buffer
             self.relativeIndex = 0
 
-        def __next__(self):
+        def __next__(self) -> SaberMovementData:
             if self.relativeIndex >= BUFFER_SIZE:
                 raise StopIteration
 
