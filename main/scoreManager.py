@@ -1,3 +1,4 @@
+from geometry import Vector3
 
 
 class ComboManager:
@@ -35,16 +36,25 @@ class ScoreManager:
         self.combo = ComboManager()
         self.active_cut_events = []
         self.score = 0
+        self.raw = Vector3(0, 0, 0)
+        self.processed = 0
 
     def register_cut_event(self, cut_event):
         self.active_cut_events.append(cut_event)
 
     def update(self, frame):
         for cut_event in self.active_cut_events:
-            cut_event.update(frame)
+            cut_event.update()
             if cut_event.finished:
                 self.combo.increment()
                 self.score += cut_event.get_score() * self.combo
+                self.raw += cut_event.get_score_breakdown()
+                print(cut_event.get_score_breakdown())
+                self.processed += 1
+                self.active_cut_events.remove(cut_event)
 
     def get_score(self):
         return self.score
+
+    def get_avg(self):
+        return self.raw / self.processed

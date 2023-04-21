@@ -29,7 +29,7 @@ class SaberMovementBuffer:
 
         curr_data = self.get_curr()
         if curr_data is None:
-            new_data = SaberMovementData(new_hilt_pos, new_tip_pos, Vector3(0, 0, 0), Vector3(0, 0, 0), time)
+            new_data = SaberMovementData(new_hilt_pos, new_tip_pos, None, None, time)
         else:
             new_data = SaberMovementData(new_hilt_pos, new_tip_pos, curr_data.hiltPos, curr_data.tipPos, time)
 
@@ -45,13 +45,16 @@ class SaberMovementBuffer:
             if self.relativeIndex >= BUFFER_SIZE:
                 raise StopIteration
 
-            output = self.buffer.data[(self.buffer.nextAddIndex - self.relativeIndex) % BUFFER_SIZE]
+            output = self.buffer.data[(self.buffer.nextAddIndex - self.relativeIndex - 1) % BUFFER_SIZE]
 
             if output is None:
                 raise StopIteration
 
             self.relativeIndex += 1
             return output
+
+        def __iter__(self):
+            return self
 
     def __iter__(self):
         return self.BufferIterator(self)

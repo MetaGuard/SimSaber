@@ -1,5 +1,5 @@
-from saberMovementBuffer import SaberMovementBuffer
-from math import acos, pi as π, round
+from .saberMovementBuffer import SaberMovementBuffer
+from math import pi
 from typeDefs import SaberMovementData
 from geometry import Plane, Vector3
 
@@ -12,6 +12,7 @@ class GoodCutEvent:
         self.finished = False
         last_added = buffer.get_curr()
         self.cut_plane_normal = last_added.cutPlaneNormal
+        self.cut_plane = Plane(self.cut_plane_normal, last_added.hiltPos)
         self.cut_time = last_added.time
         self.before_cut_rating = buffer.calculate_swing_rating()
         self.after_cut_rating = 0
@@ -43,7 +44,7 @@ class GoodCutEvent:
         cut_hilt_pos = (self.right_before.hiltPos + self.right_after.hiltPos) / 2
         cut_tip_pos = self.note_plane.ray_trace(
             self.right_before.tipPos,
-            self.right_before.tipPos - self.right_after.tipPos)[1]
+            self.right_after.tipPos - self.right_before.tipPos)[1]
         self.cut_time = self.right_after.time
 
         before_cut_error = (cut_tip_pos - cut_hilt_pos).angle(self.right_before.tipPos - self.right_before.hiltPos)
@@ -64,15 +65,18 @@ class GoodCutEvent:
             self.after_cut_rating += new_data.segmentAngle * (90 - angle_with_normal) / 15 / 60
 
         if self.after_cut_rating > 1:
+            self.after_cut_rating = 1
             self.finished = True
 
     # Might be incorrect
     def calculate_acc(self):
         max_cut_score = 15
-        cut_plane = Plane(self.right_before.cutPlaneNormal, self.right_before.hiltPos)
-        dist = cut_plane.dist_to_point(self.note_orientation.position)
+        dist = self.cut_plane.dist_to_point(self.note_orientation.position)
         acc_percentage = 0 if dist > 0.3 else 1 - dist / 0.3
-        self.acc = acc_percentage * max_cut_score
+        self.acc = round(acc_percentage * max_cut_score)
 
     def get_score(self):
         return round(self.before_cut_rating * 70) + round(self.after_cut_rating * 30) + self.acc
+
+    def get_score_breakdown(self):
+        return Vector3(round(self.before_cut_rating * 70), round(self.after_cut_rating * 30), self.acc)

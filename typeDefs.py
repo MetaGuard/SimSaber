@@ -42,5 +42,9 @@ class SaberMovementData:
         self.hiltPos = hilt
         self.tipPos = tip
         self.time = time
-        self.cutPlaneNormal = (tip - hilt).cross((prevHilt + prevTip) / 2 - hilt).normal()
-        self.segmentAngle = (tip - hilt).angle(prevTip - prevHilt)
+        if prevHilt is None or prevTip is None:
+            self.cutPlaneNormal = None
+            self.segmentAngle = 0
+        else:
+            self.cutPlaneNormal = (tip - hilt).cross((prevHilt + prevTip) / 2 - hilt).normal()
+            self.segmentAngle = (tip - hilt).angle(prevTip - prevHilt)

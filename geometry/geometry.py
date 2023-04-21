@@ -248,7 +248,7 @@ class Plane:
         if self.normal.dot(dir) == 0:
             return (None, None)
 
-        dist = (self.center - point) / self.normal.dot(dir)
+        dist = self.normal.dot(self.center - point) / self.normal.dot(dir)
         intersection = point + dist * dir
         return (dist, intersection)
 

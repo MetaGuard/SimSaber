@@ -28,7 +28,8 @@ class NoteManager:
         self.active = []
 
     def update(self, frame):
-        while len(self.notes) > 0 and frame.time >= self.get_spawn_time(self.notes[-1].time):
+        # print(self.get_spawn_time(self.notes[-1]), frame.time)
+        while len(self.notes) > 0 and frame.time >= self.get_spawn_time(self.notes[-1]):
             new_note = NoteObject(self.map, self.notes.pop(), self.replay, self)
             self.active.append(new_note)
 
@@ -36,7 +37,7 @@ class NoteManager:
             note_object.update(frame)
 
     def get_spawn_time(self, note):
-        return (note.time * 60 / self.map.beatsPerMinute + self.spawn_ahead_time)
+        return (note.time * 60 / self.map.beatsPerMinute - self.spawn_ahead_time)
 
     def get_active_note_by_id(self, id) -> NoteObject:
         for note_object in self.active:

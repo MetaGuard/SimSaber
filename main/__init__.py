@@ -1,1 +1,1 @@
-from driver import calculate_score_assuming_valid_times
+from .driver import calculate_score_assuming_valid_times
