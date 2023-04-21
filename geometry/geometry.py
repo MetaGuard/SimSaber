@@ -178,7 +178,7 @@ class Vector3:
         return self / self.mag()
 
     def angle(self, other):
-        return acos(self.dot(other) / sqrt(self.sqr_mag() * other.sqr_mag()))
+        return acos(self.dot(other) / sqrt(self.sqr_mag() * other.sqr_mag())) * RAD_TO_DEG
 
     def rotate(self, quat: Quaternion):
         quaternion_form = quat * Quaternion(self.x, self.y, self.z, 0) * quat.conjugate()

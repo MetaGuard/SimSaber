@@ -36,3 +36,11 @@ class SaberMovementData:
     tipPos: Vector3
     cutPlaneNormal: Vector3
     time: float
+    segmentAngle: float
+
+    def __init__(self, hilt, tip, prevHilt, prevTip, time):
+        self.hiltPos = hilt
+        self.tipPos = tip
+        self.time = time
+        self.cutPlaneNormal = (tip - hilt).cross((prevHilt + prevTip) / 2 - hilt).normal()
+        self.segmentAngle = (tip - hilt).angle(prevTip - prevHilt)
