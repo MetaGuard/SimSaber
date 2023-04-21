@@ -22,23 +22,19 @@ class SaberMovementBuffer:
         return self.data[(self.nextAddIndex - 2) % BUFFER_SIZE]
 
     def add_saber_data(self, hand_object: VRObject, time: float):
-        new_data = SaberMovementData()
-        curr_data = self.get_curr()
-        self.data[self.nextAddIndex] = new_data
-        self.nextAddIndex = (self.nextAddIndex + 1) % BUFFER_SIZE
-
-        new_data.hiltPos = Vector3(hand_object.x, hand_object.y, hand_object.z)
-        new_data.tipPos = Vector3(0, 1, 0).rotate(
+        new_hilt_pos = Vector3(hand_object.x, hand_object.y, hand_object.z)
+        new_tip_pos = new_hilt_pos + Vector3(0, 1, 0).rotate(
             Quaternion(hand_object.x_rot, hand_object.y_rot, hand_object.z_rot, hand_object.w_rot)
         )
-        new_data.time = time
 
+        curr_data = self.get_curr()
         if curr_data is None:
-            new_data.cutPlaneNormal = 0
-            return
-        new_data.cutPlaneNormal = (new_data.hiltPos - new_data.tipPos).cross(
-            new_data.hiltPos - (curr_data.tipPos + curr_data.hiltPos) / 2
-        ).normal()
+            new_data = SaberMovementData(new_hilt_pos, new_tip_pos, Vector3(0, 0, 0), Vector3(0, 0, 0), time)
+        else:
+            new_data = SaberMovementData(new_hilt_pos, new_tip_pos, curr_data.hiltPos, curr_data.tipPos, time)
+
+        self.data[self.nextAddIndex] = new_data
+        self.nextAddIndex = (self.nextAddIndex + 1) % BUFFER_SIZE
 
     class BufferIterator:
         def __init__(self, buffer):
