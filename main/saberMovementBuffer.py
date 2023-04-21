@@ -23,7 +23,7 @@ class SaberMovementBuffer:
 
     def add_saber_data(self, hand_object: VRObject, time: float):
         new_hilt_pos = Vector3(hand_object.x, hand_object.y, hand_object.z)
-        new_tip_pos = new_hilt_pos + Vector3(0, 1, 0).rotate(
+        new_tip_pos = new_hilt_pos + Vector3(0, 0, 1).rotate(
             Quaternion(hand_object.x_rot, hand_object.y_rot, hand_object.z_rot, hand_object.w_rot)
         )
 

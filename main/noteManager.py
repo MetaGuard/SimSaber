@@ -28,7 +28,6 @@ class NoteManager:
         self.active = []
 
     def update(self, frame):
-        # print(self.get_spawn_time(self.notes[-1]), frame.time)
         while len(self.notes) > 0 and frame.time >= self.get_spawn_time(self.notes[-1]):
             new_note = NoteObject(self.map, self.notes.pop(), self.replay, self)
             self.active.append(new_note)

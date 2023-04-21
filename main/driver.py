@@ -34,12 +34,8 @@ def calculate_score_assuming_valid_times(map_data: Map, replay: Bsor):
             event = note_events.pop()
             note_object = note_manager.get_active_note_by_id(event.note_id)
             if note_object is None:
-                print(event.note_id, [note.id for note in note_manager.active])
                 continue
-            print("observed:", note_object.orientation.position)
-            print("real:", Vector3(*event.cut.cutPoint))
-            print((note_object.orientation.position - Vector3(*event.cut.cutPoint)).mag(), event.cut.cutDistanceToCenter)
-            print()
+
             note_object.handle_cut()
             if event.cut.saberType == 0:
                 score_manager.register_cut_event(GoodCutEvent(left_hand_buffer, note_object.orientation))
@@ -50,4 +46,7 @@ def calculate_score_assuming_valid_times(map_data: Map, replay: Bsor):
                 break
 
     print(score_manager.get_avg())
+    for predicted, real in zip(score_manager.scores, [(event.pre_score, event.post_score, event.acc_score) for event in replay.notes]):
+        if predicted != real:
+            print(predicted, real)
     return score_manager.get_score()

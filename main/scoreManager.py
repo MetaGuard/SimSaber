@@ -37,7 +37,7 @@ class ScoreManager:
         self.active_cut_events = []
         self.score = 0
         self.raw = Vector3(0, 0, 0)
-        self.processed = 0
+        self.scores = []
 
     def register_cut_event(self, cut_event):
         self.active_cut_events.append(cut_event)
@@ -48,13 +48,12 @@ class ScoreManager:
             if cut_event.finished:
                 self.combo.increment()
                 self.score += cut_event.get_score() * self.combo
-                self.raw += cut_event.get_score_breakdown()
-                print(cut_event.get_score_breakdown())
-                self.processed += 1
+                self.raw += Vector3(*cut_event.get_score_breakdown())
+                self.scores.append(cut_event.get_score_breakdown())
                 self.active_cut_events.remove(cut_event)
 
     def get_score(self):
         return self.score
 
     def get_avg(self):
-        return self.raw / self.processed
+        return self.raw / len(self.scores)

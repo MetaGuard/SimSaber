@@ -1,6 +1,4 @@
 from .saberMovementBuffer import SaberMovementBuffer
-from math import pi
-from typeDefs import SaberMovementData
 from geometry import Plane, Vector3
 
 
@@ -79,4 +77,4 @@ class GoodCutEvent:
         return round(self.before_cut_rating * 70) + round(self.after_cut_rating * 30) + self.acc
 
     def get_score_breakdown(self):
-        return Vector3(round(self.before_cut_rating * 70), round(self.after_cut_rating * 30), self.acc)
+        return (round(self.before_cut_rating * 70), round(self.after_cut_rating * 30), self.acc)
