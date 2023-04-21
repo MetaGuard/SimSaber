@@ -11,5 +11,5 @@ with open(TESTING_PATH + 'replay.bsor', 'rb') as f:
 
 mapFile = create_map(TESTING_PATH + 'map')
 
-print(calculate_score_assuming_valid_times(mapFile, replay))
-print(replay.info.score)
+print("Calculated score:", calculate_score_assuming_valid_times(mapFile, replay))
+print("Actual score:", replay.info.score)

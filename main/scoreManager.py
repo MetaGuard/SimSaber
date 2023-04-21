@@ -46,11 +46,20 @@ class ScoreManager:
         for cut_event in self.active_cut_events:
             cut_event.update()
             if cut_event.finished:
-                self.combo.increment()
                 self.score += cut_event.get_score() * self.combo
+                self.combo.increment()
                 self.raw += Vector3(*cut_event.get_score_breakdown())
                 self.scores.append(cut_event.get_score_breakdown())
                 self.active_cut_events.remove(cut_event)
+
+    def finish(self):
+        for cut_event in self.active_cut_events:
+            cut_event.finished = True
+            self.combo.increment()
+            self.score += cut_event.get_score() * self.combo
+            self.raw += Vector3(*cut_event.get_score_breakdown())
+            self.scores.append(cut_event.get_score_breakdown())
+            self.active_cut_events.remove(cut_event)
 
     def get_score(self):
         return self.score

@@ -3,14 +3,13 @@ from geometry import Plane, Vector3
 
 
 class GoodCutEvent:
-    def __init__(self, buffer: SaberMovementBuffer, note_orientation):
+    def __init__(self, buffer: SaberMovementBuffer, note_orientation, cut_point=None):
         self.note_orientation = note_orientation
         self.buffer = buffer
         self.note_plane_was_cut = False
         self.finished = False
         last_added = buffer.get_curr()
         self.cut_plane_normal = last_added.cutPlaneNormal
-        self.cut_plane = Plane(self.cut_plane_normal, last_added.hiltPos)
         self.cut_time = last_added.time
         self.before_cut_rating = buffer.calculate_swing_rating()
         self.after_cut_rating = 0
@@ -19,6 +18,13 @@ class GoodCutEvent:
             self.cut_plane_normal.cross(Vector3(0, 0, 1).rotate(note_orientation.rotation)),
             note_orientation.position
         )
+        self.has_note_plane_been_cut = False
+
+        cut_point = last_added.hiltPos if cut_point is None else cut_point
+        self.cut_plane = Plane(self.cut_plane_normal, cut_point)
+        self.note_forward = Vector3(0, 0, 1).rotate(
+            self.note_orientation.rotation)
+
         self.calculate_acc()
 
     def update(self):
@@ -30,8 +36,13 @@ class GoodCutEvent:
         if prev_data is None:
             return
 
+        if not self.has_note_plane_been_cut:
+            self.note_plane.center = self.note_orientation.position
+            self.note_plane.normal = self.cut_plane_normal.cross(self.note_forward)
+
         if self.note_plane.side(curr_data.tipPos) != self.note_plane.side(prev_data.tipPos):
             self.on_intersect_note_plane()
+            self.has_note_plane_been_cut = True
         else:
             self.update_after_cut(curr_data)
 

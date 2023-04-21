@@ -15,38 +15,37 @@ def calculate_score_assuming_valid_times(map_data: Map, replay: Bsor):
 
     note_events = replay.notes[::-1]
 
-    print(len(replay.frames))
+    print("# frames:", len(replay.frames))
 
     count = 0
 
     for frame in replay.frames[1:]:
         count += 1
         if count % 1000 == 0:
-            print(count)
-        if len(note_events) == 0:
-            break
+            print("Processed Frame:", count)
+
         left_hand_buffer.add_saber_data(frame.left_hand, frame.time)
         right_hand_buffer.add_saber_data(frame.right_hand, frame.time)
-        note_manager.update(frame)
-        score_manager.update(frame)
 
-        while note_events[-1].event_time < frame.time:
+        while len(note_events) > 0 and note_events[-1].event_time < frame.time:
             event = note_events.pop()
             note_object = note_manager.get_active_note_by_id(event.note_id)
             if note_object is None:
                 continue
 
             note_object.handle_cut()
+            cut_point = Vector3(*event.cut.cutPoint)
             if event.cut.saberType == 0:
-                score_manager.register_cut_event(GoodCutEvent(left_hand_buffer, note_object.orientation))
+                score_manager.register_cut_event(GoodCutEvent(left_hand_buffer, note_object.orientation, cut_point))
             else:
-                score_manager.register_cut_event(GoodCutEvent(right_hand_buffer, note_object.orientation))
+                score_manager.register_cut_event(GoodCutEvent(right_hand_buffer, note_object.orientation, cut_point))
 
-            if len(note_events) == 0:
-                break
+        note_manager.update(frame)
+        score_manager.update(frame)
 
-    print(score_manager.get_avg())
-    for predicted, real in zip(score_manager.scores, [(event.pre_score, event.post_score, event.acc_score) for event in replay.notes]):
+    score_manager.finish()
+
+    for predicted, real in zip(score_manager.scores, [(e.pre_score, e.post_score, e.acc_score) for e in replay.notes]):
         if predicted != real:
-            print(predicted, real)
+            print("Predicted:", predicted, ", Real:", real)
     return score_manager.get_score()

@@ -68,7 +68,7 @@ class SaberMovementBuffer:
         swing_rating = (first_data.segmentAngle if override is None else override) / 100
 
         for saber_data in i:
-            if first_time - prev_time > 0.4:
+            if first_time - prev_time >= 0.4:
                 break
 
             angle_with_normal = first_normal.angle(saber_data.cutPlaneNormal)
