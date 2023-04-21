@@ -2,6 +2,7 @@ from typing import *
 from typeDefs import SaberMovementData
 from bsor.Bsor import VRObject
 from geometry import Vector3, Quaternion
+from math import acos, pi
 
 BUFFER_SIZE = 500
 
@@ -11,8 +12,8 @@ class SaberMovementBuffer:
     nextAddIndex: int
 
     def __init__(self):
-        data = [None] * BUFFER_SIZE
-        nextAddIndex = 0
+        self.data = [None] * BUFFER_SIZE
+        self.nextAddIndex = 0
 
     def get_curr(self) -> SaberMovementData:
         return self.data[(self.nextAddIndex - 1) % BUFFER_SIZE]
@@ -58,3 +59,29 @@ class SaberMovementBuffer:
 
     def __iter__(self):
         return self.BufferIterator(self)
+
+    def calculate_swing_rating(self):
+        swing_rating = 0
+        first_normal = self.get_curr().cutPlaneNormal
+        first_time = self.get_curr().time
+        prev_time = first_time
+
+        for saber_data in self:
+            if first_time - prev_time > 0.4:
+                break
+
+            angle_with_normal = first_normal.angle(saber_data.cutPlaneNormal)
+            if angle_with_normal >= 90:
+                break
+
+            prev_time = saber_data.time
+
+            if angle_with_normal < 75:
+                swing_rating += saber_data.segmentAngle / 100
+            else:
+                swing_rating += saber_data.segmentAngle * (90 - angle_with_normal) / 15 / 100
+
+            if swing_rating > 1:
+                return 1
+
+        return swing_rating
