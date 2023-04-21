@@ -1,87 +1,78 @@
 from saberMovementBuffer import SaberMovementBuffer
 from math import acos, pi as π, round
 from typeDefs import SaberMovementData
+from geometry import Plane, Vector3
 
 
 class GoodCutEvent:
     def __init__(self, buffer: SaberMovementBuffer, note_orientation):
         self.note_orientation = note_orientation
-        self.right_before = buffer.get_prev()
-        self.right_after = buffer.get_curr()
-        self.estimated_saber_data = SaberMovementData()
-        self.estimated_saber_data.hiltPos = (self.right_before.hiltPos + self.right_after.hiltPos) / 2  # incorrect
-        self.estimated_saber_data.tipPos = (self.right_before.tipPos + self.right_after.tipPos) / 2  # incorrect
-        self.cut_time = self.right_after.time
-
-        prev_data = self.estimated_saber_data
-        self.before_cut_angle = 0
-
-        for saber_data in buffer:
-            if self.cut_time - saber_data.time > 0.4:
-                break
-
-            dot_with_cut_vec = saber_data.cutPlaneNormal.dot(self.right_after.cutPlaneNormal)
-            if dot_with_cut_vec < 0:
-                break
-
-            angle_with_cut_vec = acos(dot_with_cut_vec)
-            angle_segment = GoodCutEvent.angle_segment(saber_data, prev_data)
-
-            if angle_with_cut_vec < 70:
-                self.before_cut_angle += angle_segment
-            else:
-                self.before_cut_angle += angle_segment * (90 - angle_with_cut_vec) / 20
-
-            if self.before_cut_angle >= 100:
-                break
-
-            prev_data = saber_data
-
-        self.after_cut_angle = GoodCutEvent.angle_segment(self.right_after, self.estimated_saber_data)
-        self.most_recent_data = self.right_after
+        self.buffer = buffer
+        self.note_plane_was_cut = False
         self.finished = False
+        last_added = buffer.get_curr()
+        self.cut_plane_normal = last_added.cutPlaneNormal
+        self.cut_time = last_added.time
+        self.before_cut_rating = buffer.calculate_swing_rating()
+        self.after_cut_rating = 0
+        # self.note_plane = Plane(Vector3(0, 1, 0).rotate(note_orientation.rotation), note_orientation.position)
+        self.note_plane = Plane(
+            self.cut_plane_normal.cross(Vector3(0, 0, 1).rotate(note_orientation.rotation)),
+            note_orientation.position
+        )
         self.calculate_acc()
 
-    @staticmethod
-    def angle_segment(data1, data2):
-        return acos((data1.tipPos - data1.hiltPos).dot(data2.tipPos - data2.hiltPos)) * 180 / π
-
-    def update(self, saber_data: SaberMovementData):
-        if self.finished:
-            return False
-
-        if self.cut_time - saber_data.time > 0.4:
-            self.after_cut_rating = self.after_cut_angle / 30
+    def update(self):
+        curr_data = self.buffer.get_curr()
+        prev_data = self.buffer.get_prev()
+        if curr_data.time - self.cut_time > 0.4:
             self.finished = True
-            return False
+            return
+        if prev_data is None:
+            return
 
-        dot_with_cut_vec = saber_data.cutPlaneNormal.dot(self.right_after.cutPlaneNormal)
-        if dot_with_cut_vec < 0:
-            self.after_cut_rating = self.after_cut_angle / 30
-            self.finished = True
-            return False
-
-        angle_with_cut_vec = acos(dot_with_cut_vec)
-        angle_segment = GoodCutEvent.angle_segment(saber_data, self.most_recent_data)
-
-        if angle_with_cut_vec >= 70:
-            self.after_cut_angle += angle_segment
+        if self.note_plane.side(curr_data.tipPos) != self.note_plane.side(prev_data.tipPos):
+            self.on_intersect_note_plane()
         else:
-            self.after_cut_angle += angle_segment * (90 - angle_with_cut_vec) / 20
+            self.update_after_cut(curr_data)
 
-        if self.after_cut_angle > 70:
-            self.after_cut_rating = self.after_cut_angle / 30
+    def on_intersect_note_plane(self):
+        self.right_before = self.buffer.get_prev()
+        self.right_after = self.buffer.get_curr()
+
+        cut_hilt_pos = (self.right_before.hiltPos + self.right_after.hiltPos) / 2
+        cut_tip_pos = self.note_plane.ray_trace(
+            self.right_before.tipPos,
+            self.right_before.tipPos - self.right_after.tipPos)[1]
+        self.cut_time = self.right_after.time
+
+        before_cut_error = (cut_tip_pos - cut_hilt_pos).angle(self.right_before.tipPos - self.right_before.hiltPos)
+        after_cut_error = (cut_tip_pos - cut_hilt_pos).angle(self.right_after.tipPos - self.right_after.hiltPos)
+
+        self.before_cut_rating = self.buffer.calculate_swing_rating(before_cut_error)
+        self.after_cut_rating = after_cut_error / 60
+
+    def update_after_cut(self, new_data):
+        angle_with_normal = self.cut_plane_normal.angle(new_data.cutPlaneNormal)
+        if angle_with_normal >= 90:
             self.finished = True
-            return False
+            return
 
-        self.most_recent_data = saber_data
+        if angle_with_normal < 75:
+            self.after_cut_rating += new_data.segmentAngle / 60
+        else:
+            self.after_cut_rating += new_data.segmentAngle * (90 - angle_with_normal) / 15 / 60
 
+        if self.after_cut_rating > 1:
+            self.finished = True
+
+    # Might be incorrect
     def calculate_acc(self):
-        self.acc = 15
+        max_cut_score = 15
+        cut_plane = Plane(self.right_before.cutPlaneNormal, self.right_before.hiltPos)
+        dist = cut_plane.dist_to_point(self.note_orientation.position)
+        acc_percentage = 0 if dist > 0.3 else 1 - dist / 0.3
+        self.acc = acc_percentage * max_cut_score
 
     def get_score(self):
-        return (
-            round(self.before_cut_angle / 100) * 70 +
-            round(self.after_cut_angle / 70) * 30 +
-            self.acc
-        )
+        return round(self.before_cut_rating * 70) + round(self.after_cut_rating * 30) + self.acc

@@ -60,13 +60,15 @@ class SaberMovementBuffer:
     def __iter__(self):
         return self.BufferIterator(self)
 
-    def calculate_swing_rating(self):
-        swing_rating = 0
-        first_normal = self.get_curr().cutPlaneNormal
-        first_time = self.get_curr().time
+    def calculate_swing_rating(self, override=None):
+        i = iter(self)
+        first_data = next(i)
+        first_normal = first_data.cutPlaneNormal
+        first_time = first_data.time
         prev_time = first_time
+        swing_rating = (first_data.segmentAngle if override is None else override) / 100
 
-        for saber_data in self:
+        for saber_data in i:
             if first_time - prev_time > 0.4:
                 break
 
