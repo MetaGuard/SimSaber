@@ -235,26 +235,62 @@ class Quaternion(Quaternion):
         z = (M[1][0] - M[0][1]) / (4 * w)
 
         return Quaternion(x, y, z, w)
-
+    
     @staticmethod
-    def from_forward_and_up(forward, up):
-        x_axis = up.cross(forward).normal()
-        y_axis = forward.cross(x_axis).normal()
-        z_axis = forward.normal()
-        return Quaternion.from_rotation_matrix((
-            (x_axis.x, y_axis.x, z_axis.x),
-            (x_axis.y, y_axis.y, z_axis.y),
-            (x_axis.z, y_axis.z, z_axis.z),
-        ))
+    def look_rotation(forward: Vector3, up: Vector3) -> Quaternion:
+        forward = forward.normal()
+        
+        # First matrix column
+        side_axis = Vector3.normalize(Vector3.cross(up, forward))
+        # Second matrix column
+        rotated_up = Vector3.cross(forward, side_axis)
+        # Third matrix column
+        look_at = forward
+
+        # Sums of matrix main diagonal elements
+        trace1 = 1 + side_axis.x - rotated_up.y - look_at.z
+        trace2 = 1 - side_axis.x + rotated_up.y - look_at.z
+        trace3 = 1 - side_axis.x - rotated_up.y + look_at.z
+
+        # If orthonormal vectors form identity matrix, then return identity rotation
+        calculations_epsilon = 1e-15
+        if trace1 + trace2 + trace3 < calculations_epsilon:
+            return Quaternion(0, 0, 0, 1)
+
+        # Choose largest diagonal
+        if trace1 + calculations_epsilon > trace2 and trace1 + calculations_epsilon > trace3:
+            s = math.sqrt(trace1) * 2.0
+            return Quaternion(
+                0.25 * s,
+                (rotated_up.x + side_axis.y) / s,
+                (look_at.x + side_axis.z) / s,
+                (rotated_up.z - look_at.y) / s
+            )
+        elif trace2 + calculations_epsilon > trace1 and trace2 + calculations_epsilon > trace3:
+            s = math.sqrt(trace2) * 2.0
+            return Quaternion(
+                (rotated_up.x + side_axis.y) / s,
+                0.25 * s,
+                (look_at.y + rotated_up.z) / s,
+                (look_at.x - side_axis.z) / s
+            )
+        else:
+            s = math.sqrt(trace3) * 2.0
+            return Quaternion(
+                (look_at.x + side_axis.z) / s,
+                (look_at.y + rotated_up.z) / s,
+                0.25 * s,
+                (side_axis.y - rotated_up.x) / s
+            )
     
-    # def forward(self):
-    #     return Vector3(2 * (self.x * self.z - self.w * self.y),
-    #             2 * (self.y * self.z + self.w * self.x),
-    #             1 - 2 * (self.x * self.x + self.y * self.y))
+    def forward(self):
+        return Vector3(2 * (self.x * self.z - self.w * self.y),
+                2 * (self.y * self.z + self.w * self.x),
+                1 - 2 * (self.x * self.x + self.y * self.y))
     
-    def forward(self) -> Vector3:
-        forward_vector = Vector3(0, 0, -1)  # Assuming Z- as the forward direction in a right-handed coordinate system
-        return self.rotate(forward_vector)
+    # def forward(self) -> Vector3:
+    #     forward_vector = Vector3(0, 0, -1)  # Assuming Z- as the forward direction in a right-handed coordinate system
+    #     return self.rotate(forward_vector)
 
     @staticmethod
     def Slerp(q0, q1, u):
@@ -268,6 +304,50 @@ class Quaternion(Quaternion):
             return q0
         output = (math.sin((1 - u) * θ) / math.sin(θ)) * q0 + (math.sin(u * θ) / math.sin(θ)) * q1
         return output / math.sqrt(output.dot(output))
+    
+    def normalized(self) -> Quaternion:
+        norm = math.sqrt(self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z)
+        return Quaternion(self.x / norm, self.y / norm, self.z / norm, self.w / norm)
+    
+    @staticmethod
+    def slerp(q1: Quaternion, q2: Quaternion, t: float) -> Quaternion:
+        # Compute the cosine of the angle between the two quaternions
+        cos_half_theta = q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z
+
+        # If q1 is the same as q2 (or q2 is the inverse of q1), return q1
+        if abs(cos_half_theta) >= 1.0:
+            return Quaternion(q1.x, q1.y, q1.z, q1.w)
+
+        # If q1 and q2 are in opposite directions, negate q2 to make the interpolation shorter
+        if cos_half_theta < 0:
+            q2 = Quaternion(-q2.x, -q2.y, -q2.z, -q2.w)
+            cos_half_theta = -cos_half_theta
+
+        # If the angle between q1 and q2 is too small, use linear interpolation to avoid numerical instability
+        if cos_half_theta > 0.95:
+            result = Quaternion(
+                q1.x * (1 - t) + q2.x * t,
+                q1.y * (1 - t) + q2.y * t,
+                q1.z * (1 - t) + q2.z * t,
+                q1.w * (1 - t) + q2.w * t,
+            )
+            return result.normalized()
+
+        # Calculate the actual angle between q1 and q2
+        half_theta = math.acos(cos_half_theta)
+        sin_half_theta = math.sqrt(1 - cos_half_theta * cos_half_theta)
+
+        # Calculate the scale factors for q1 and q2
+        a = math.sin((1 - t) * half_theta) / sin_half_theta
+        b = math.sin(t * half_theta) / sin_half_theta
+
+        # Compute the resulting quaternion
+        return Quaternion(
+            q1.x * a + q2.x * b,
+            q1.y * a + q2.y * b,
+            q1.z * a + q2.z * b,
+            q1.w * a + q2.w * b,
+        )
 
     @staticmethod
     def Lerp(q0, q1, u):
@@ -477,7 +557,7 @@ def three_points_to_box(p0: Vector3, p1: Vector3, p2: Vector3):
     if normalized1.sqr_mag() > 9.9999997473787516e-06:
         normalized2 = (p0 - p1).normal()
         in_normal = normalized2.cross(normalized1)
-        orientation = Quaternion.from_forward_and_up(normalized2, normalized1)
+        orientation = Quaternion.look_rotation(normalized2, normalized1)
         num1 = abs(Plane(in_normal, p0).get_distance_to_point(p2))
         num2 = (p0 - p1).mag()
         vector3 = (p0 + p1) * 0.5

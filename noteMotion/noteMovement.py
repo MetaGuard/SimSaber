@@ -46,10 +46,6 @@ def quat_slerp(p, q, t):
     return Quaternion.Slerp(p, q, t)
 
 
-def look_rotation(forwards, up):
-    return Quaternion.from_forward_and_up(forwards, up)
-
-
 class NoteData:
     def __init__(self, map: Map, note: Note):
         self.time = note.time * 60 / map.beatsPerMinute
@@ -214,7 +210,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
     euler_angles = Vector3(0, 0, movement_data.end_rotation)
     if note_data.gameplay_type == NoteData.GameplayType.NORMAL:
         # abs and % are in opposite order to that of the code since % is different in python vs C#
-        index = abs(round(note_data.time * 10 + jump_end_pos.x * 2 + jump_end_pos.y * 2)) % NUM_RANDOM_ROTATIONS
+        index = abs(int(round(note_data.time * 10 + jump_end_pos.x * 2 + jump_end_pos.y * 2)) % NUM_RANDOM_ROTATIONS)
         euler_angles += RANDOM_ROTATIONS[index] * 20
     middle_rotation = Quaternion.from_Euler(euler_angles.x, euler_angles.y, euler_angles.z)
 
@@ -257,18 +253,18 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
 
         if percentage_of_jump < 0.5:
             if percentage_of_jump >= 0.125:
-                a = Quaternion.Slerp(middle_rotation, end_rotation, sin((percentage_of_jump - 0.125) * π * 2))
+                a = Quaternion.slerp(middle_rotation, end_rotation, sin((percentage_of_jump - 0.125) * π * 2))
             else:
-                a = Quaternion.Slerp(start_rotation, middle_rotation, sin((percentage_of_jump * π * 4)))
+                a = Quaternion.slerp(start_rotation, middle_rotation, sin((percentage_of_jump * π * 4)))
 
             if rotate_towards_player:
                 head_pseudo_location = Vector3(frame.head.x, frame.head.y, frame.head.z)  # ###
                 head_pseudo_location.y = lerp(head_pseudo_location.y, local_pos.y, 0.8)
                 normalized = (local_pos - head_pseudo_location.rotate(inverse_world_rotation)).normal()
-                rotated_object_up = Vector3(0, 1, 0).rotate(end_rotation) # Vector3(0, 1, 0).rotate(object.rotation)
+                rotated_object_up = Vector3(0, 1, 0).rotate(object.rotation)
                 
                 vector3 = rotated_object_up.rotate(world_to_player_rotation)
-                b = look_rotation(normalized, vector3.rotate(inverse_world_rotation))
+                b = Quaternion.look_rotation(normalized, vector3.rotate(inverse_world_rotation))
                 object.rotation = Quaternion.Lerp(a, b, percentage_of_jump * 2)
 
             else:
