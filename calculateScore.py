@@ -1,6 +1,6 @@
 from typeDefs import *
 from typing import *
-from bsor.Bsor import Bsor
+from Bsor import Bsor
 
 
 def calculate_score(map: Map, replay: Bsor) -> int:

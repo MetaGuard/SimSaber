@@ -1,0 +1,85 @@
+{
+  "_version": "2.0.0",
+  "_songName": "King For A Day",
+  "_songSubName": "ft. Kellin Quinn",
+  "_songAuthorName": "Pierce The Veil",
+  "_levelAuthorName": "FEFELAND",
+  "_beatsPerMinute": 226,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 12,
+  "_previewDuration": 10,
+  "_songFilename": "PierceTheVeil -KingForADay.egg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "TriangleEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_contributors": [
+      {
+        "_role": "Mapper",
+        "_name": "FEFELAND",
+        "_iconPath": "FEFE.png"
+      },
+      {
+        "_role": "AutoLighter",
+        "_name": "Loloppe",
+        "_iconPath": "bot.png"
+      }
+    ]
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Hard",
+          "_difficultyRank": 5,
+          "_beatmapFilename": "HardStandard.dat",
+          "_noteJumpMovementSpeed": 14,
+          "_noteJumpStartBeatOffset": 0,
+          "_customData": {
+            "_difficultyLabel": "Baron",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": []
+          }
+        },
+        {
+          "_difficulty": "Expert",
+          "_difficultyRank": 7,
+          "_beatmapFilename": "ExpertStandard.dat",
+          "_noteJumpMovementSpeed": 17,
+          "_noteJumpStartBeatOffset": 0.5,
+          "_customData": {
+            "_difficultyLabel": "Duke",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": []
+          }
+        },
+        {
+          "_difficulty": "ExpertPlus",
+          "_difficultyRank": 9,
+          "_beatmapFilename": "ExpertPlusStandard.dat",
+          "_noteJumpMovementSpeed": 23,
+          "_noteJumpStartBeatOffset": 0,
+          "_customData": {
+            "_difficultyLabel": "King",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": []
+          }
+        }
+      ]
+    }
+  ]
+}

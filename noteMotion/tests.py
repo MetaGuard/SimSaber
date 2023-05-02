@@ -1,7 +1,7 @@
 import unittest
 from geometry import Vector3, Quaternion, Orientation
 from noteMotion import create_note_orientation_updater
-from bsor.Bsor import make_bsor
+from Bsor import make_bsor
 from interpretMapFiles import create_map, load_note_movement_data
 from matplotlib import pyplot as plt
 import numpy as np

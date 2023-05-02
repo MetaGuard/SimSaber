@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from bsor.Bsor import make_bsor
+from Bsor import make_bsor
 
 with open('sample.bsor', 'rb') as f:
     bsor = make_bsor(f)

@@ -1,6 +1,6 @@
 
 from noteMotion.noteMovement import create_note_orientation_updater
-from bsor.Bsor import make_bsor
+from Bsor import make_bsor
 from interpretMapFiles import create_map, load_note_movement_data
 from geometry import Quaternion, Orientation, Vector3
 

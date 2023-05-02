@@ -1,6 +1,6 @@
 from noteMovement import create_note_position_function, MovementData, NoteData
 from typeDefs import Map as MAP, BeatMap, Note
-from bsor.Bsor import Bsor, make_bsor
+from Bsor import Bsor, make_bsor
 from matplotlib import pyplot as plt
 import numpy as np
 from interpretMapFiles import create_map

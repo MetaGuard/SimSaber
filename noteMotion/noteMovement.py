@@ -8,7 +8,7 @@ from typing import *
 from math import cos, sin, pi as π, sqrt
 from numpy import single
 from geometry import Vector3, Quaternion, Orientation
-from bsor.Bsor import Bsor, Frame
+from Bsor import Bsor, Frame
 
 
 def lerp_unclamped(a, b, t):

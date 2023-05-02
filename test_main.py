@@ -1,5 +1,5 @@
 from main import calculate_score_assuming_valid_times
-from bsor.Bsor import make_bsor
+from Bsor import make_bsor
 from interpretMapFiles import create_map
 
 

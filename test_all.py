@@ -1,5 +1,5 @@
 import unittest
-from geometry.tests import TestQuaternionEulerAngles
+from main.tests import TestQuaternionEulerAngles
 from noteMotion.tests import TestPosition, TestRotation
 
 unittest.main()
