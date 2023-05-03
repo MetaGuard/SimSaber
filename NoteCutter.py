@@ -35,9 +35,6 @@ def overlap_box(center: Vector3, half_extents: Vector3, orientation: Quaternion,
                 cross_axis = Vector3.normalize(cross_axis)
                 if separating_axis_exists(cross_axis, box1, box2):
                     return False
-                # cross_axis = Vector3.normalize(axis1.cross(axis2))
-                # if separating_axis_exists(cross_axis, box1, box2):
-                #     return False
                 
         return True
 
@@ -112,7 +109,6 @@ class NoteCutter:
                 if note_object.id == note.note_id and abs(note_object.spawn_time - note.spawn_time) < 0.001:
                     event_note = note
                     break
-            # print(cuttable_by_saber)
             note_object.cut(saber, center, orientation, saber_blade_top_pos - top_pos, cuttable_by_saber, event_note)
         
 
@@ -131,13 +127,10 @@ class NoteCutter:
                 radius = component.small_cuttable.radius() if small_collider else component.big_cuttable.radius()
                 position = component.orientation.position
 
-                
-
                 cuttable_by_saber_sort_param = self.cuttable_by_saber_sort_params[i]
                 cuttable_by_saber_sort_param.cuttable_by_saber = self.colliders[i]
                 cuttable_by_saber_sort_param.distance = (top_pos - position).sqr_mag() - radius * radius
 
-                # print(f"{cuttable_by_saber_sort_param.distance} radius: {radius}, small_collider: {small_collider}")
                 cuttable_by_saber_sort_param.pos = position
 
             sorted_cuttable_by_saber_sort_params = sorted(self.cuttable_by_saber_sort_params[:length], key=functools.cmp_to_key(compare))

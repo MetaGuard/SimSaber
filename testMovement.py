@@ -20,7 +20,7 @@ test_files = glob.glob(TESTING_PATH + "motion/*.csv")
 test_files.sort(key=lambda x: float(x.split('_')[0].split('\\')[-1]))
 
 MOTION_FILE_INDEX = 217
-SUM_TEST = False
+SUM_TEST = True
 
 position_error_sum = 0
 rotation_error_sum = 0

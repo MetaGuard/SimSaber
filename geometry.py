@@ -606,11 +606,14 @@ class Hitbox:
         self.z_offset = z_offset
 
     def update(self, orientation: Orientation):
-        self.position = Vector3(orientation.position.x, orientation.position.y, orientation.position.z - self.z_offset)
+        self.position = Vector3(orientation.position.x, orientation.position.y, orientation.position.z)
         self.rotation = Quaternion(orientation.rotation.x, orientation.rotation.y, orientation.rotation.z, orientation.rotation.w)
 
-    # def get_axes(self): 
-    #     return [ self.rotation.rotate(Vector3(1, 0, 0)), self.rotation.rotate(Vector3(0, 1, 0)), self.rotation.rotate(Vector3(0, 0, 1)) ]
+        # Calculate the local z-axis direction in world space
+        local_z = self.rotation.multiply_point(Vector3(0, 0, 1))
+
+        # Apply the z_offset along the local z-axis direction
+        self.position -= local_z * self.z_offset
     
     def get_axes(self): 
         return [ Vector3.normalize(self.rotation.rotate(Vector3(1, 0, 0))),
@@ -629,8 +632,6 @@ class Hitbox:
     
     def radius(self) -> float:
         extens = self.calculate_aabb_bounds().max()
-
-        # print(f"{extens} {self.size}")
 
         return max(extens.x, extens.y, extens.z)
     

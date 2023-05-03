@@ -104,6 +104,7 @@ class NoteObject:
             return
         
         if not direction_ok:
+            print(f"NOT OK {self.orientation.rotation.to_Euler()}")
             print(f"NOT OK {cut_dir_angle} {saber.time}")
 
         in_normal = orientation.multiply_point(Vector3(0.0, 1, 0.0))
@@ -177,10 +178,9 @@ class NoteObject:
 
 
 class NoteManager:
-    active: list[NoteObject] = []
-    finished: list[NoteObject] = []
-
     def __init__(self, map_data: Map, replay: Bsor):
+        self.active: list[NoteObject] = []
+        self.finished: list[NoteObject] = []
         self.beatmap = map_data.beatMaps[replay.info.mode][replay.info.difficulty]
         self.notes = self.beatmap.notes[::-1]
         self.map = map_data

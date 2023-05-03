@@ -44,53 +44,60 @@ class MultiplierCounter:
             self.multiplier_increase_max_progress = self.multiplier * 2
 
 
-def calculate_accuracy(replay: Bsor) -> list[NoteStruct]:
-    all_structs: list[NoteStruct] = []
+class AccuracyCalculator:
+    def __init__(self):
+        self.all_structs: list[NoteStruct] = []
+        self.score: int = 0
+        self.note_index: int = 0
+        self.combo: int = 0
+        self.max_combo: int = 0
+        self.max_score: int = 0
+        self.max_counter: MultiplierCounter = MultiplierCounter()
+        self.normal_counter: MultiplierCounter = MultiplierCounter()
 
-    for note in replay.notes:
-        all_structs.append(NoteStruct(note.event_time, note.spawn_time, note.params.color_type != 2, note))
-
-    for wall in replay.walls:
-        all_structs.append(NoteStruct(wall.time, wall.spawnTime))
-
-    all_structs = sorted(all_structs, key=lambda item: item.time)
-
-    score: int = 0
-    note_index: int = 0
-    combo: int = 0
-    max_combo: int = 0
-    max_score: int = 0
-    max_counter: MultiplierCounter = MultiplierCounter()
-    normal_counter: MultiplierCounter = MultiplierCounter()
-
-    for i in range(0, len(all_structs)):
-        note = all_structs[i]
+    def calculate_for_index(self, i: int):
+        note = self.all_structs[i]
 
         score_for_max_score = 20 if note.note_event is not None and note.note_event.params.scoring_type == ScoringType.BurstSliderElement else 115
-        max_counter.increase()
-        max_score += max_counter.multiplier * score_for_max_score
+        self.max_counter.increase()
+        self.max_score += self.max_counter.multiplier * score_for_max_score
 
         if note.note_event is None or note.note_event.event_type != EventType.Good:
-            normal_counter.decrease()
-            multiplier = normal_counter.multiplier
-            combo = 0
+            self.normal_counter.decrease()
+            multiplier = self.normal_counter.multiplier
+            self.combo = 0
         else:
-            normal_counter.increase()
-            combo += 1
-            multiplier = normal_counter.multiplier
-            score += multiplier * note.note_event.score.value
+            self.normal_counter.increase()
+            self.combo += 1
+            multiplier = self.normal_counter.multiplier
+            self.score += multiplier * note.note_event.score.value
 
-        if combo > max_combo:
-            max_combo = combo
+        if self.combo > self.max_combo:
+            self.max_combo = self.combo
 
         note.multiplier = multiplier
-        note.total_score = score
-        note.combo = combo
+        note.total_score = self.score
+        note.combo = self.combo
 
         if note.is_block:
-            note.accuracy = note.total_score / max_score
-            note_index += 1
+            note.accuracy = note.total_score / self.max_score
         else:
-            note.accuracy = 0 if i == 0 else all_structs[i - 1].accuracy
+            note.accuracy = 0 if i == 0 else self.all_structs[i - 1].accuracy
 
-    return all_structs
+    def add_new_note(self, note: Note):
+        self.all_structs.append(NoteStruct(note.event_time, note.spawn_time, note.params.color_type != 2, note))
+        self.calculate_for_index(len(self.all_structs) - 1)
+
+    def calculate_accuracy(self, replay: Bsor):
+        for note in replay.notes:
+            self.all_structs.append(NoteStruct(note.event_time, note.spawn_time, note.params.color_type != 2, note))
+
+        for wall in replay.walls:
+           self. all_structs.append(NoteStruct(wall.time, wall.spawnTime))
+
+        self.all_structs.sort(key=lambda item: item.time)
+
+        for i in range(len(self.all_structs)):
+            self.calculate_for_index(i)
+
+        return self.all_structs[-1].total_score
