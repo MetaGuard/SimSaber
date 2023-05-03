@@ -6,10 +6,9 @@ import numpy as np
 from interpretMapFiles import create_map
 from geometry import Vector3, Orientation, Quaternion
 import pandas as pd
-
+import glob
 
 TESTING_PATH = './testData/Bang/'
-MOTION_FILE_NAME = '4.535572_30102.csv'
 
 with open(TESTING_PATH + 'replay.bsor', 'rb') as f:
     m = make_bsor(f)
@@ -17,32 +16,58 @@ with open(TESTING_PATH + 'replay.bsor', 'rb') as f:
 mapFile = create_map(TESTING_PATH + 'map')
 testBeatMap = mapFile.beatMaps[m.info.mode][m.info.difficulty]
 
-orientation = Orientation(Vector3(0, 0, 0), Quaternion(0, 0, 0, 1))
-position_function = create_note_orientation_updater(mapFile, testBeatMap.notes[3], m)
+test_files = glob.glob(TESTING_PATH + "motion/*.csv")
+test_files.sort(key=lambda x: float(x.split('_')[0].split('\\')[-1]))
+
+MOTION_FILE_INDEX = 217
+SUM_TEST = False
+
+position_error_sum = 0
+rotation_error_sum = 0
+
+for i in range(len(test_files) if SUM_TEST else 1):
+    orientation = Orientation(Vector3(0, 0, 0), Quaternion(0, 0, 0, 1))
+    note = testBeatMap.notes[i if SUM_TEST else MOTION_FILE_INDEX]
+    position_function = create_note_orientation_updater(mapFile, note, m)
+
+    filename = test_files[i if SUM_TEST else MOTION_FILE_INDEX]
+    print(f"Testing file: {filename}")
+    if not SUM_TEST:
+        print(f"Note line_index {note.lineIndex}, line_layer {note.lineLayer}, type {note.type}, cut_direction {note.cutDirection}")
+    else:
+        print(i)
+    actual = pd.read_csv(filename).to_numpy()
+    first_time = actual[0][0] - 0.001
+    last_time = actual[-1][0]
 
 
-actual = pd.read_csv(TESTING_PATH + 'motion/' + MOTION_FILE_NAME).to_numpy()
-first_time = actual[0][0] - 0.001
-last_time = actual[-1][0]
+    for index, frame in enumerate([frame for frame in m.frames if first_time <= frame.time <= last_time]):
+        position_function(frame, orientation)
+        predicted = orientation.position
+        
+        observed = Vector3(actual[index][1], actual[index][2], actual[index][3])
+        error = Vector3.distance(predicted, observed)
+        if not SUM_TEST:
+            print("Position:")
+            print("Predicted\tt =", round(frame.time, 5), "\t", round(predicted.x, 5), round(predicted.y, 5), round(predicted.z, 5))
+            print("Observed\tt =", round(actual[index][0], 5), "\t", round(observed.x, 5), round(observed.y, 5), round(observed.z, 5))
+            print("Error\t\tΔ =", round(error, 5), "\n")
 
+        position_error_sum += error
 
-for index, frame in enumerate([frame for frame in m.frames if first_time <= frame.time <= last_time]):
-    position_function(frame, orientation)
-    predicted = orientation.position
-    
-    observed = Vector3(actual[index][1], actual[index][2], actual[index][3])
-    error = Vector3.distance(predicted, observed)
-    print("Predicted\tt =", round(frame.time, 5), "\t", round(predicted.x, 5), round(predicted.y, 5), round(predicted.z, 5))
-    print("Observed\tt =", round(actual[index][0], 5), "\t", round(observed.x, 5), round(observed.y, 5), round(observed.z, 5))
-    print("Error\t\tΔ =", round(error, 5), "\n")
+        predicted2 = orientation.rotation.to_Euler()
+        observed2 = Quaternion(actual[index][4], actual[index][5], actual[index][6], actual[index][7]).to_Euler()
+        error2 = Vector3.distance(predicted2, observed2)
+        if not SUM_TEST:
+            print("Rotation:")
+            print("Predicted\tt =", round(frame.time, 5), "\t", round(predicted2.x, 5), round(predicted2.y, 5), round(predicted2.z, 5))
+            print("Observed\tt =", round(actual[index][0], 5), "\t", round(observed2.x, 5), round(observed2.y, 5), round(observed2.z, 5))
+            print("Error\t\tΔ =", round(error2, 5), "\n")
 
-    predicted2 = orientation.rotation.to_Euler()
-    observed2 = Quaternion(actual[index][4], actual[index][5], actual[index][6], actual[index][7]).to_Euler()
-    error2 = Vector3.distance(predicted2, observed2)
-    print("Predicted\tt =", round(frame.time, 5), "\t", round(predicted2.x, 5), round(predicted2.y, 5), round(predicted2.z, 5))
-    print("Observed\tt =", round(actual[index][0], 5), "\t", round(observed2.x, 5), round(observed2.y, 5), round(observed2.z, 5))
-    print("Error\t\tΔ =", round(error2, 5), "\n")
+        rotation_error_sum += error2
 
+    print("Position error sum:", position_error_sum)
+    print("Rotation error sum:", rotation_error_sum)
 
 # NUM_NOTES = 1
 # position_funtions = [create_note_position_function(mapFile, testBeatMap.notes[i], m)

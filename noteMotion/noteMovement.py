@@ -210,7 +210,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
     euler_angles = Vector3(0, 0, movement_data.end_rotation)
     if note_data.gameplay_type == NoteData.GameplayType.NORMAL:
         # abs and % are in opposite order to that of the code since % is different in python vs C#
-        index = abs(int(round(note_data.time * 10 + jump_end_pos.x * 2 + jump_end_pos.y * 2)) % NUM_RANDOM_ROTATIONS)
+        index = abs(int(round(note_data.time * 10 + jump_end_pos.x * 2 + jump_end_pos.y * 2))) % NUM_RANDOM_ROTATIONS
         euler_angles += RANDOM_ROTATIONS[index] * 20
     middle_rotation = Quaternion.from_Euler(euler_angles.x, euler_angles.y, euler_angles.z)
 
@@ -265,7 +265,7 @@ def create_note_orientation_updater(map: Map, note: Note, bsor: Bsor):
                 
                 vector3 = rotated_object_up.rotate(world_to_player_rotation)
                 b = Quaternion.look_rotation(normalized, vector3.rotate(inverse_world_rotation))
-                object.rotation = Quaternion.Lerp(a, b, percentage_of_jump * 2)
+                object.rotation = Quaternion.slerp(a, b, percentage_of_jump * 2)
 
             else:
                 object.rotation = a
