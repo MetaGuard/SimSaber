@@ -16,3 +16,10 @@ There are two box colliders for Beat Saber blocks; the bigger one (bigger than t
 - All notes "bad cut" hitbox is always:
   - Size: 0.4 x 0.4 x 0.4 box
   - Centered at 0, 0, 0 relative to the note model
+
+### Bombs
+
+<img src="bomb.png" width="300" />
+
+The bomb hitbox is a sphere of radius 0.18, centered at 0, 0, 0 relative to the bomb model. Interestingly, this means that the bomb’s hitbox is smaller than the spikes on the bomb model, which can be clipped by the saber tip without actually triggering the bomb.
+
