@@ -5,6 +5,25 @@
 [![GitHub issues](https://img.shields.io/github/issues/metaguard/simsaber)](https://github.com/metaguard/simsaber/issues)
 [![MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/metaguard/simsaber/blob/main/LICENSE)
 
+## Usage
+To use SimSaber to simulate a Beat Saber replay, you first need a Beat Saber map file, typically stored as a ZIP file containing several JSON files, as well as a Beat Saber replay file in the [Beat Saber open replay format](https://github.com/BeatLeader/BS-Open-Replay). To load the Beat Saber map file, you can use the `create_map` method included in the `interpretMapFiles` utility provided by this package. To load the Beat Saber replay file, we recommend using [Schippi's py-bsor package](https://github.com/Schippi/py-bsor). Finally, to simulate the Beat Saber replay, you can use the `calculate_score_assuming_valid_times` function. A complete example is included below:
+
+```
+from main import calculate_score_assuming_valid_times
+from bsor.Bsor import make_bsor
+from interpretMapFiles import create_map
+
+// Load Beat Saber map file
+mapFile = create_map('example_map_folder')
+
+// Load Beat Saber replay file
+with open('example_replay_file.bsor', 'rb') as f:
+    replay = make_bsor(f)
+
+// Simulate Beat Saber replay
+score = calculate_score_assuming_valid_times(mapFile, replay)
+```
+
 ## Beat Saber Scoring
 
 Here, we discuss the basics of Beat Saber's score calculation algorithms. These details were primarily discovered by directly reverse engineering the game's source code, with some help from the [BeatLeader](https://www.beatleader.xyz/) and [BSMG](https://bsmg.wiki/) communities.
