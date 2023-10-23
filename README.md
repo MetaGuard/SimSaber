@@ -1,5 +1,9 @@
-# SimSaber
-Python-based Beat Saber replay simulator and scoring validator.
+![](./thumbnail.png)
+
+**SimSaber: Python-based Beat Saber replay simulator and scoring validator**
+
+[![GitHub issues](https://img.shields.io/github/issues/metaguard/simsaber)](https://github.com/metaguard/simsaber/issues)
+[![MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/metaguard/simsaber/blob/main/LICENSE)
 
 ## Beat Saber Scoring
 
