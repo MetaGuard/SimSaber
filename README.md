@@ -5,6 +5,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/metaguard/simsaber)](https://github.com/metaguard/simsaber/issues)
 [![MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/metaguard/simsaber/blob/main/LICENSE)
 
+SimSaber is an open-source project that provides a Python-based simulation framework for validating Beat Saber replays. It was created by decompiling and reverse engineering the Beat Saber source code, and faithfully replicates the game's geometry, physics, collision detection, and scoring algorithms. 
+
 ## Usage
 To use SimSaber to simulate a Beat Saber replay, you first need a Beat Saber map file, typically stored as a ZIP file containing several JSON files, as well as a Beat Saber replay file in the [Beat Saber open replay format](https://github.com/BeatLeader/BS-Open-Replay). To load the Beat Saber map file, you can use the `create_map` method included in the `interpretMapFiles` utility provided by this package. To load the Beat Saber replay file, we recommend using [Schippi's py-bsor package](https://github.com/Schippi/py-bsor). Finally, to simulate the Beat Saber replay, you can use the `calculate_score_assuming_valid_times` function. A complete example is included below:
 
@@ -65,7 +67,7 @@ First, the game calculates the angle between the frame before the cut and the in
 - The frame being considered happened more than 0.4 seconds ago
 - The angle between the cut plane normal of the saber right after the cut and that of the frame being considered is more than 90°.
 
-The latter condition basically states that if the direction that the saber was swinging in was different from the direction of the saber at the moment of the cut by more than 90o, then it is no longer considered part of the same swing. Furthermore, if this angle is between 75o and 90o, then instead of adding just the raw angle, it starts to linearly interpolate between adding the full angle and adding nothing.
+The latter condition basically states that if the direction that the saber was swinging in was different from the direction of the saber at the moment of the cut by more than 90o, then it is no longer considered part of the same swing. Furthermore, if this angle is between 75° and 90°, then instead of adding just the raw angle, it starts to linearly interpolate between adding the full angle and adding nothing.
 
 ### After Cut Rating
 This is calculated essentially the same way as the before cut rating, except that it has to wait to actually receive the new frames, and so the after cut rating is updated with each frame. In the same way as the before cut rating, new frames are no longer considered after 0.4 seconds, or if the saber’s cut angle deviates by more than 90°. 
