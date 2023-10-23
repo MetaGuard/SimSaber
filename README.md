@@ -7,6 +7,8 @@
 
 ## Beat Saber Scoring
 
+Here, we discuss the basics of Beat Saber's score calculation algorithms. These details were primarily discovered by directly reverse engineering the game's source code, with some help from the [BeatLeader](https://www.beatleader.xyz/) and [BSMG](https://bsmg.wiki/) communities.
+
 ### Overview
 The score of a note is broken down by before swing (70 points), after swing (30 points), and accuracy (15 points). The before swing rating and after swing rating are both values between 0 and 1 which are the fraction of their respective total possible points (70 and 30). Each note calculates swing rating independently. On the frame on which the saber first crosses the center of the note, the game calculates the before cut rating from the previous recorded saber positions, and also knows to start calculating the after cut rating.
 
@@ -48,3 +50,5 @@ The latter condition basically states that if the direction that the saber was s
 
 ### After Cut Rating
 This is calculated essentially the same way as the before cut rating, except that it has to wait to actually receive the new frames, and so the after cut rating is updated with each frame. In the same way as the before cut rating, new frames are no longer considered after 0.4 seconds, or if the saber’s cut angle deviates by more than 90°. 
+
+_Copyright &copy;2023 -- License [MIT](https://github.com/metaguard/simsaber/blob/main/LICENSE)_
